@@ -140,7 +140,7 @@ renderHead('Departments');
                             <form method="POST" style="display:inline" onsubmit="return confirmAction('Delete this department? Linked classes and users will block the delete.')">
                                 <input type="hidden" name="action" value="delete">
                                 <input type="hidden" name="id" value="<?= $d['id'] ?>">
-                                <button type="submit" class="btn btn-outline btn-sm" style="color: #DC2626;">Delete</button>
+                                <button type="submit" class="btn btn-delete btn-sm">🗑 Delete</button>
                             </form>
                         </td>
                     </tr>

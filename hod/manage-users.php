@@ -79,6 +79,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         setFlash('success',"Password reset to: $pass");
     }
 
+    if ($action === 'deactivate') {
+        $id     = (int)$_POST['id'];
+        $urole  = $_POST['urole'] ?? 'teacher';
+        if ($id) {
+            $check = $pdo->prepare("SELECT id,name FROM users WHERE id=? AND department_id=?");
+            $check->execute([$id, $deptId]);
+            $row = $check->fetch();
+            if ($row) {
+                $pdo->prepare("UPDATE users SET is_active=0 WHERE id=? AND department_id=?")->execute([$id,$deptId]);
+                logActivity($pdo,$user['id'],'deactivate_user',"HOD deactivated {$urole}: {$row['name']}");
+                setFlash('warning',"User \"{$row['name']}\" has been deactivated.");
+            } else {
+                setFlash('error','User not found or access denied.');
+            }
+        }
+    }
+
+    if ($action === 'activate') {
+        $id    = (int)$_POST['id'];
+        $urole = $_POST['urole'] ?? 'teacher';
+        if ($id) {
+            $check = $pdo->prepare("SELECT id,name FROM users WHERE id=? AND department_id=?");
+            $check->execute([$id, $deptId]);
+            $row = $check->fetch();
+            if ($row) {
+                $pdo->prepare("UPDATE users SET is_active=1 WHERE id=? AND department_id=?")->execute([$id,$deptId]);
+                logActivity($pdo,$user['id'],'activate_user',"HOD activated {$urole}: {$row['name']}");
+                setFlash('success',"User \"{$row['name']}\" has been reactivated.");
+            } else {
+                setFlash('error','User not found or access denied.');
+            }
+        }
+    }
+
     header('Location: manage-users.php?tab='.($_POST['tab']??'teachers')); exit;
 }
 
@@ -145,9 +179,14 @@ renderHead('Manage Users');
                         <td class="text-sm"><?= formatINR($t['rate_theory']) ?> / <?= formatINR($t['rate_practical']) ?></td>
                         <td><?= $t['is_active']?'<span class="badge badge-approved">Active</span>':'<span class="badge badge-rejected">Inactive</span>' ?></td>
                         <td>
-                            <div class="d-flex gap-8">
-                                <a href="?edit=<?= $t['id'] ?>&tab=teachers" class="btn btn-outline btn-sm">Edit</a>
-                                <form method="POST"><input type="hidden" name="action" value="reset_password"><input type="hidden" name="id" value="<?= $t['id'] ?>"><input type="hidden" name="urole" value="teacher"><input type="hidden" name="tab" value="teachers"><button class="btn btn-outline btn-sm" onclick="return confirmAction('Reset password?')">🔑</button></form>
+                            <div class="d-flex gap-8" style="flex-wrap:wrap">
+                                <a href="?edit=<?= $t['id'] ?>&tab=teachers" class="btn btn-outline btn-sm">✏️ Edit</a>
+                                <form method="POST" style="margin:0"><input type="hidden" name="action" value="reset_password"><input type="hidden" name="id" value="<?= $t['id'] ?>"><input type="hidden" name="urole" value="teacher"><input type="hidden" name="tab" value="teachers"><button class="btn btn-outline btn-sm" onclick="return confirmAction('Reset password to teacher@1234?')">🔑</button></form>
+                                <?php if ($t['is_active']): ?>
+                                <form method="POST" style="margin:0" onsubmit="return confirmAction('Deactivate this teacher? They will lose access.')"><input type="hidden" name="action" value="deactivate"><input type="hidden" name="id" value="<?= $t['id'] ?>"><input type="hidden" name="urole" value="teacher"><input type="hidden" name="tab" value="teachers"><button class="btn btn-sm" style="background:rgba(239,68,68,.1);color:#EF4444;border:1px solid rgba(239,68,68,.3)">🚫 Deactivate</button></form>
+                                <?php else: ?>
+                                <form method="POST" style="margin:0" onsubmit="return confirmAction('Reactivate this teacher?')"><input type="hidden" name="action" value="activate"><input type="hidden" name="id" value="<?= $t['id'] ?>"><input type="hidden" name="urole" value="teacher"><input type="hidden" name="tab" value="teachers"><button class="btn btn-sm" style="background:rgba(34,197,94,.1);color:#16A34A;border:1px solid rgba(34,197,94,.3)">✅ Reactivate</button></form>
+                                <?php endif; ?>
                             </div>
                         </td>
                     </tr>
@@ -225,9 +264,14 @@ renderHead('Manage Users');
                         <td><?= formatINR($s['rate_per_hour']) ?>/hr</td>
                         <td><?= $s['is_active']?'<span class="badge badge-approved">Active</span>':'<span class="badge badge-rejected">Inactive</span>' ?></td>
                         <td>
-                            <div class="d-flex gap-8">
-                                <a href="?edit=<?= $s['id'] ?>&tab=students" class="btn btn-outline btn-sm">Edit</a>
-                                <form method="POST"><input type="hidden" name="action" value="reset_password"><input type="hidden" name="id" value="<?= $s['id'] ?>"><input type="hidden" name="urole" value="student"><input type="hidden" name="tab" value="students"><button class="btn btn-outline btn-sm" onclick="return confirmAction('Reset password?')">🔑</button></form>
+                            <div class="d-flex gap-8" style="flex-wrap:wrap">
+                                <a href="?edit=<?= $s['id'] ?>&tab=students" class="btn btn-outline btn-sm">✏️ Edit</a>
+                                <form method="POST" style="margin:0"><input type="hidden" name="action" value="reset_password"><input type="hidden" name="id" value="<?= $s['id'] ?>"><input type="hidden" name="urole" value="student"><input type="hidden" name="tab" value="students"><button class="btn btn-outline btn-sm" onclick="return confirmAction('Reset password to student@1234?')">🔑</button></form>
+                                <?php if ($s['is_active']): ?>
+                                <form method="POST" style="margin:0" onsubmit="return confirmAction('Deactivate this student? They will lose access.')"><input type="hidden" name="action" value="deactivate"><input type="hidden" name="id" value="<?= $s['id'] ?>"><input type="hidden" name="urole" value="student"><input type="hidden" name="tab" value="students"><button class="btn btn-sm" style="background:rgba(239,68,68,.1);color:#EF4444;border:1px solid rgba(239,68,68,.3)">🚫 Deactivate</button></form>
+                                <?php else: ?>
+                                <form method="POST" style="margin:0" onsubmit="return confirmAction('Reactivate this student?')"><input type="hidden" name="action" value="activate"><input type="hidden" name="id" value="<?= $s['id'] ?>"><input type="hidden" name="urole" value="student"><input type="hidden" name="tab" value="students"><button class="btn btn-sm" style="background:rgba(34,197,94,.1);color:#16A34A;border:1px solid rgba(34,197,94,.3)">✅ Reactivate</button></form>
+                                <?php endif; ?>
                             </div>
                         </td>
                     </tr>

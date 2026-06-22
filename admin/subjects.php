@@ -39,6 +39,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
+    if ($action === 'delete') {
+        $id = (int)$_POST['id'];
+        if ($id) {
+            $t = $pdo->prepare("SELECT COUNT(*) FROM users WHERE subject_id=? AND role='teacher'");
+            $t->execute([$id]); $teacherCount = (int)$t->fetchColumn();
+
+            if ($teacherCount > 0) {
+                $pdo->prepare("UPDATE subjects SET is_active=0 WHERE id=?")->execute([$id]);
+                logActivity($pdo,$user['id'],'delete_subject',"Admin deactivated subject #$id ($teacherCount teachers assigned)");
+                setFlash('warning', "Subject has $teacherCount teacher(s) assigned — deactivated instead of deleted.");
+            } else {
+                $pdo->prepare("DELETE FROM subjects WHERE id=?")->execute([$id]);
+                logActivity($pdo,$user['id'],'delete_subject',"Admin deleted subject #$id");
+                setFlash('success', 'Subject deleted successfully.');
+            }
+        }
+    }
+
     header('Location: subjects.php' . ($_POST['filter_dept'] ? '?dept='.(int)$_POST['filter_dept'] : ''));
     exit;
 }
@@ -144,7 +162,14 @@ renderHead('Subjects');
                             <td class="text-sm"><?= e($s['class_label']) ?><br><span class="text-muted text-xs"><?= e($s['dept_name']) ?></span></td>
                             <td><?= modeBadge($s['mode']) ?></td>
                             <td><?= $s['is_active'] ? '<span class="badge badge-approved">Active</span>' : '<span class="badge badge-rejected">Inactive</span>' ?></td>
-                            <td><a href="?edit=<?= $s['id'] ?>&dept=<?= $filterDept ?>&class=<?= $filterClass ?>" class="btn btn-outline btn-sm">Edit</a></td>
+                             <td><a href="?edit=<?= $s['id'] ?>&dept=<?= $filterDept ?>&class=<?= $filterClass ?>" class="btn btn-outline btn-sm">Edit</a>
+                                <form method="POST" style="display:inline" onsubmit="return confirmAction('Delete / deactivate this subject?')">
+                                    <input type="hidden" name="action" value="delete">
+                                    <input type="hidden" name="id" value="<?= $s['id'] ?>">
+                                    <input type="hidden" name="filter_dept" value="<?= $filterDept ?>">
+                                    <button type="submit" class="btn btn-delete btn-sm">🗑 Delete</button>
+                                </form>
+                             </td>
                         </tr>
                         <?php endforeach; ?>
                         </tbody>

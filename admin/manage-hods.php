@@ -38,13 +38,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($action === 'edit') {
         $id     = (int)$_POST['id'];
         $name   = trim($_POST['name']  ?? '');
+        $email  = trim($_POST['email'] ?? '');
         $phone  = trim($_POST['phone'] ?? '');
         $dept   = (int)$_POST['department_id'];
         $active = (int)$_POST['is_active'];
-        $pdo->prepare("UPDATE users SET name=?,phone=?,department_id=?,is_active=? WHERE id=? AND role='hod'")
-            ->execute([$name,$phone,$dept,$active,$id]);
-        logActivity($pdo,$user['id'],'edit_hod',"Updated HOD #$id");
-        setFlash('success', 'HOD updated.');
+
+        if (!$email) {
+            setFlash('error', 'Email is required.');
+        } else {
+            // Check duplicate email — exclude current HOD's own record
+            $dup = $pdo->prepare("SELECT id FROM users WHERE email=? AND id != ?");
+            $dup->execute([$email, $id]);
+            if ($dup->fetch()) {
+                setFlash('error', 'That email is already used by another account.');
+            } else {
+                $pdo->prepare("UPDATE users SET name=?,email=?,phone=?,department_id=?,is_active=? WHERE id=? AND role='hod'")
+                    ->execute([$name,$email,$phone,$dept,$active,$id]);
+                logActivity($pdo,$user['id'],'edit_hod',"Updated HOD #$id");
+                setFlash('success', 'HOD updated successfully.');
+            }
+        }
     }
 
     if ($action === 'reset_password') {
@@ -53,6 +66,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $pdo->prepare("UPDATE users SET password=? WHERE id=? AND role='hod'")
             ->execute([password_hash($pass, PASSWORD_DEFAULT), $id]);
         setFlash('success', "Password reset to: $pass");
+    }
+
+    if ($action === 'deactivate') {
+        $id = (int)$_POST['id'];
+        $s  = $pdo->prepare("SELECT name FROM users WHERE id=? AND role='hod'");
+        $s->execute([$id]); $row = $s->fetch();
+        if ($row) {
+            $pdo->prepare("UPDATE users SET is_active=0 WHERE id=? AND role='hod'")->execute([$id]);
+            logActivity($pdo,$user['id'],'deactivate_hod',"Admin deactivated HOD: {$row['name']}");
+            setFlash('warning', "HOD \"{$row['name']}\" deactivated.");
+        }
+    }
+
+    if ($action === 'activate') {
+        $id = (int)$_POST['id'];
+        $s  = $pdo->prepare("SELECT name FROM users WHERE id=? AND role='hod'");
+        $s->execute([$id]); $row = $s->fetch();
+        if ($row) {
+            $pdo->prepare("UPDATE users SET is_active=1 WHERE id=? AND role='hod'")->execute([$id]);
+            logActivity($pdo,$user['id'],'activate_hod',"Admin reactivated HOD: {$row['name']}");
+            setFlash('success', "HOD \"{$row['name']}\" reactivated.");
+        }
     }
 
     header('Location: manage-hods.php'); exit;
@@ -71,6 +106,13 @@ $hods  = $pdo->query(
      LEFT JOIN departments d ON d.id=u.department_id
      WHERE u.role='hod' ORDER BY u.name"
 )->fetchAll();
+
+// Departments that already have an active HOD (excluded from Add form)
+$assignedDeptIds = array_column(
+    $pdo->query("SELECT DISTINCT department_id FROM users WHERE role='hod' AND is_active=1 AND department_id IS NOT NULL")->fetchAll(),
+    'department_id'
+);
+$assignedDeptIds = array_map('intval', $assignedDeptIds);
 
 renderHead('Manage HODs');
 ?>
@@ -108,15 +150,28 @@ renderHead('Manage HODs');
                         <td><?= e($h['dept_name'] ?? '—') ?></td>
                         <td><?= $h['is_active'] ? '<span class="badge badge-approved">Active</span>' : '<span class="badge badge-rejected">Inactive</span>' ?></td>
                         <td>
-                            <div class="d-flex gap-8">
-                                <a href="?edit=<?= $h['id'] ?>" class="btn btn-outline btn-sm">Edit</a>
-                                <form method="POST" style="display:inline">
+                            <div class="d-flex gap-8" style="flex-wrap:wrap">
+                                <a href="?edit=<?= $h['id'] ?>" class="btn btn-outline btn-sm">✏️ Edit</a>
+                                <form method="POST" style="margin:0">
                                     <input type="hidden" name="action" value="reset_password">
                                     <input type="hidden" name="id" value="<?= $h['id'] ?>">
                                     <button class="btn btn-outline btn-sm"
-                                            onclick="return confirmAction('Reset password to hod@1234?')">🔑
-                                    </button>
+                                            onclick="return confirmAction('Reset HOD password to hod@1234?')">🔑</button>
                                 </form>
+                                <?php if ($h['is_active']): ?>
+                                <form method="POST" style="margin:0" onsubmit="return confirmAction('Deactivate this HOD? They will lose login access.')">
+                                    <input type="hidden" name="action" value="deactivate">
+                                    <input type="hidden" name="id" value="<?= $h['id'] ?>">
+                                    <button type="submit" class="btn btn-delete btn-sm">🗑 Delete</button>
+                                </form>
+                                <?php else: ?>
+                                <form method="POST" style="margin:0" onsubmit="return confirmAction('Reactivate this HOD?')">
+                                    <input type="hidden" name="action" value="activate">
+                                    <input type="hidden" name="id" value="<?= $h['id'] ?>">
+                                    <button type="submit" class="btn btn-sm"
+                                            style="background:rgba(34,197,94,.1);color:#16A34A;border:1px solid rgba(34,197,94,.3)">✅ Reactivate</button>
+                                </form>
+                                <?php endif; ?>
                             </div>
                         </td>
                     </tr>
@@ -157,8 +212,9 @@ renderHead('Manage HODs');
                     </div>
                     <?php else: ?>
                     <div class="form-group">
-                        <label>Email (read-only)</label>
-                        <input type="email" class="form-control" value="<?= e($editRow['email']) ?>" disabled>
+                        <label>Email <span style="color:red">*</span></label>
+                        <input type="email" name="email" class="form-control" required
+                               value="<?= e($editRow['email']) ?>">
                     </div>
                     <?php endif; ?>
 
@@ -166,7 +222,13 @@ renderHead('Manage HODs');
                         <label>Department <span style="color:red">*</span></label>
                         <select name="department_id" class="form-control" required>
                             <option value="">— Select —</option>
-                            <?php foreach ($depts as $d): ?>
+                            <?php foreach ($depts as $d):
+                                // Skip departments already assigned to another active HOD
+                                // Always show the current HOD's own dept (so it stays selectable)
+                                $isOwnDept    = $editRow && (int)($editRow['department_id'] ?? 0) === (int)$d['id'];
+                                $alreadyTaken = !$isOwnDept && in_array((int)$d['id'], $assignedDeptIds);
+                                if ($alreadyTaken) continue;
+                            ?>
                             <option value="<?= $d['id'] ?>"
                                 <?= ($editRow['department_id'] ?? 0) == $d['id'] ? 'selected' : '' ?>>
                                 <?= e($d['name']) ?>

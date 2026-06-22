@@ -475,6 +475,12 @@ tbody tr:hover { background: #FAFBFC; }
 .btn-danger  { background: var(--rejected); color: #fff; }
 .btn-danger:hover  { background: #B91C1C; }
 
+.btn-delete {
+    background:rgba(239,68,68,.1);
+    color:#EF4444;
+    border:1px solid rgba(239,68,68,.3) 
+}
+
 .btn-warning { background: var(--pending); color: #fff; }
 .btn-warning:hover { background: #B45309; }
 

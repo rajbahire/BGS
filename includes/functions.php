@@ -168,6 +168,8 @@ function renderSidebar(string $active, string $role, array $user): void {
             ['key'=>'manual-bill',   'href'=>'manual-bill.php',   'icon'=>'✏️', 'label'=>'Manual Bill'],
             ['key'=>'other-bills',   'href'=>'other-bills.php',   'icon'=>'📄', 'label'=>'Other Bills'],
             ['key'=>'timetable',     'href'=>'timetable.php',     'icon'=>'📅', 'label'=>'Time Table'],
+            ['key'=>'classes',       'href'=>'classes.php',       'icon'=>'📚', 'label'=>'Classes'],
+            ['key'=>'subjects',      'href'=>'subjects.php',      'icon'=>'📖', 'label'=>'Subjects'],
             ['key'=>'manage-users',  'href'=>'manage-users.php',  'icon'=>'👨‍🏫', 'label'=>'Manage Users'],
             ['key'=>'profile',       'href'=>'profile.php',       'icon'=>'👤', 'label'=>'Profile'],
         ],

@@ -40,6 +40,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
+    if ($action === 'delete') {
+        $id = (int)$_POST['id'];
+        if ($id) {
+            $s = $pdo->prepare("SELECT COUNT(*) FROM subjects WHERE class_id=?");
+            $s->execute([$id]); $subjCount = (int)$s->fetchColumn();
+
+            if ($subjCount > 0) {
+                $pdo->prepare("UPDATE classes SET is_active=0 WHERE id=?")->execute([$id]);
+                logActivity($pdo,$user['id'],'delete_class',"Admin deactivated class #$id (has $subjCount subjects)");
+                setFlash('warning', "Class has $subjCount subject(s) — deactivated instead of deleted.");
+            } else {
+                $pdo->prepare("DELETE FROM classes WHERE id=?")->execute([$id]);
+                logActivity($pdo,$user['id'],'delete_class',"Admin deleted class #$id");
+                setFlash('success', 'Class deleted successfully.');
+            }
+        }
+    }
+
     header('Location: classes.php' . ($_POST['dept_filter'] ? '?dept='.(int)$_POST['dept_filter'] : ''));
     exit;
 }
@@ -60,6 +78,14 @@ $sql    = "SELECT c.*, d.name AS dept_name,
            FROM classes c JOIN departments d ON d.id=c.department_id WHERE 1=1";
 $params = [];
 if ($filterDept) { $sql .= " AND c.department_id=?"; $params[] = $filterDept; }
+
+// Build a map of taken year+semester combinations per department for the JS filter
+$takenRaw = $pdo->query("SELECT department_id, year, semester FROM classes")->fetchAll();
+$takenMap = []; // [dept_id => [[year,sem], ...]]
+foreach ($takenRaw as $t) {
+    $takenMap[(int)$t['department_id']][] = [(int)$t['year'], (int)$t['semester']];
+}
+
 $sql .= " ORDER BY d.name, c.year, c.semester";
 $stmt = $pdo->prepare($sql); $stmt->execute($params);
 $classes = $stmt->fetchAll();
@@ -119,7 +145,14 @@ renderHead('Classes');
                             <td><?= (int)$c['semester'] ?></td>
                             <td><?= (int)$c['subject_count'] ?></td>
                             <td><?= $c['is_active'] ? '<span class="badge badge-approved">Active</span>' : '<span class="badge badge-rejected">Inactive</span>' ?></td>
-                            <td><a href="?edit=<?= $c['id'] ?>" class="btn btn-outline btn-sm">Edit</a></td>
+                        <td><a href="?edit=<?= $c['id'] ?>" class="btn btn-outline btn-sm">Edit</a>
+                            <form method="POST" style="display:inline" onsubmit="return confirmAction('<?= $c['subject_count']>0 ? 'Class has subjects — it will be deactivated.' : 'Delete this class permanently?' ?>')">
+                                <input type="hidden" name="action" value="delete">
+                                <input type="hidden" name="id" value="<?= $c['id'] ?>">
+                                <input type="hidden" name="dept_filter" value="<?= $filterDept ?>">
+                                <button type="submit" class="btn btn-delete btn-sm">🗑 Delete</button>
+                            </form>
+                        </td>
                         </tr>
                         <?php endforeach; ?>
                         </tbody>
@@ -145,8 +178,8 @@ renderHead('Classes');
                     <?php if (!$editRow): ?>
                     <div class="form-group">
                         <label>Department <span style="color:red">*</span></label>
-                        <select name="department_id" class="form-control" required
-                                onchange="autoLabel()">
+                        <select name="department_id" id="sel-dept" class="form-control" required
+                                onchange="filterSemesters(); autoLabel();">
                             <option value="">— Select —</option>
                             <?php foreach ($depts as $d): ?>
                             <option value="<?= $d['id'] ?>" data-short="<?= e($d['short_name']) ?>"
@@ -158,7 +191,8 @@ renderHead('Classes');
                     </div>
                     <div class="form-group">
                         <label>Year <span style="color:red">*</span></label>
-                        <select name="year" class="form-control" required onchange="autoLabel()">
+                        <select name="year" id="sel-year" class="form-control" required
+                                onchange="filterSemesters(); autoLabel();">
                             <option value="">— Select —</option>
                             <option value="1">1st Year (FY)</option>
                             <option value="2">2nd Year (SY)</option>
@@ -168,13 +202,12 @@ renderHead('Classes');
                     </div>
                     <div class="form-group">
                         <label>Semester <span style="color:red">*</span></label>
-                        <select name="semester" class="form-control" required onchange="autoLabel()">
-                            <option value="">— Select —</option>
-                            <?php for ($s=1;$s<=8;$s++): ?>
-                            <option value="<?= $s ?>">Semester <?= $s ?></option>
-                            <?php endfor; ?>
+                        <select name="semester" id="sel-sem" class="form-control" required
+                                onchange="autoLabel()">
+                            <option value="">— Select Dept &amp; Year first —</option>
                         </select>
                     </div>
+
                     <?php endif; ?>
 
                     <div class="form-group">
@@ -211,10 +244,55 @@ renderHead('Classes');
 <?php renderFooter(); ?>
 <script>
 const yearLabels = {1:'FY',2:'SY',3:'TY',4:'LY'};
+const takenMap   = <?= json_encode($takenMap) ?>; // {deptId: [[year,sem],...], ...}
+
+function filterSemesters() {
+    const dept  = document.getElementById('sel-dept');
+    const year  = document.getElementById('sel-year');
+    const sem   = document.getElementById('sel-sem');
+    if (!dept || !year || !sem) return;
+
+    const deptId = parseInt(dept.value) || 0;
+    const yearV  = parseInt(year.value) || 0;
+
+    // Semesters already taken for this dept+year
+    const taken = new Set();
+    if (deptId && takenMap[deptId]) {
+        takenMap[deptId].forEach(([y, s]) => { if (y === yearV) taken.add(s); });
+    }
+
+    // All semesters for a year: odd year → odd sems, even year → even sems
+    // But keep it flexible — just show all 8 and remove taken ones
+    const allSems = [1,2,3,4,5,6,7,8];
+    const prevVal = sem.value;
+    sem.innerHTML = '<option value="">— Select Semester —</option>';
+
+    if (!deptId || !yearV) {
+        sem.innerHTML = '<option value="">— Select Dept &amp; Year first —</option>';
+        return;
+    }
+
+    let added = 0;
+    allSems.forEach(s => {
+        if (!taken.has(s)) {
+            const opt = document.createElement('option');
+            opt.value = s;
+            opt.textContent = 'Semester ' + s;
+            if (parseInt(prevVal) === s) opt.selected = true;
+            sem.appendChild(opt);
+            added++;
+        }
+    });
+
+    if (added === 0) {
+        sem.innerHTML = '<option value="">All semesters taken for this year</option>';
+    }
+}
+
 function autoLabel(){
-    const dept = document.querySelector('[name="department_id"]');
-    const year = document.querySelector('[name="year"]');
-    const sem  = document.querySelector('[name="semester"]');
+    const dept = document.getElementById('sel-dept');
+    const year = document.getElementById('sel-year');
+    const sem  = document.getElementById('sel-sem');
     const lbl  = document.getElementById('label-input');
     if(!dept||!year||!sem||!lbl) return;
     const short = dept.selectedOptions[0]?.dataset.short || '';
