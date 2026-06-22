@@ -1,0 +1,217 @@
+<?php
+require_once '../includes/db.php';
+require_once '../includes/auth.php';
+require_once '../includes/functions.php';
+requireTeacher();
+$user = currentUser();
+$uid  = $user['id'];
+
+// Teacher's assigned subject & class
+$teacher = $pdo->prepare("SELECT u.*,s.subject_name,s.subject_code,s.mode AS subject_mode,c.id AS class_id_val,c.label AS class_label FROM users u LEFT JOIN subjects s ON s.id=u.subject_id LEFT JOIN classes c ON c.id=s.class_id WHERE u.id=?");
+$teacher->execute([$uid]); $teacher=$teacher->fetch();
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $action = $_POST['action'] ?? '';
+
+    if ($action === 'add') {
+        $date   = $_POST['lecture_date'] ?? '';
+        $subjId = (int)($_POST['subject_id'] ?? $teacher['subject_id'] ?? 0);
+        $classId= (int)($_POST['class_id']   ?? $teacher['class_id_val'] ?? 0);
+        $tHrs   = (float)$_POST['theory_hours'];
+        $pHrs   = (float)$_POST['practical_hours'];
+        $oHrs   = (float)$_POST['other_hours'];
+        $notes  = trim($_POST['notes'] ?? '');
+
+        if (!$date) { setFlash('error','Date is required.'); }
+        elseif ($tHrs + $pHrs + $oHrs <= 0) { setFlash('error','Enter at least some hours.'); }
+        elseif (!$subjId) { setFlash('error','No subject assigned. Please update your profile.'); }
+        else {
+            $pdo->prepare("INSERT INTO lectures (teacher_id,subject_id,class_id,lecture_date,theory_hours,practical_hours,other_hours,notes) VALUES (?,?,?,?,?,?,?,?)")
+                ->execute([$uid,$subjId,$classId?:null,$date,$tHrs,$pHrs,$oHrs,$notes]);
+            logActivity($pdo,$uid,'add_lecture',"Added lecture on $date");
+            setFlash('success','Lecture entry added.');
+        }
+    }
+
+    if ($action === 'delete') {
+        $lid = (int)$_POST['lecture_id'];
+        // Only delete if not linked to a submitted/approved bill
+        $check = $pdo->prepare("SELECT l.id FROM lectures l LEFT JOIN bill_lectures bl ON bl.lecture_id=l.id LEFT JOIN bills b ON b.id=bl.bill_id AND b.status IN ('pending','approved') WHERE l.id=? AND l.teacher_id=? AND b.id IS NULL");
+        $check->execute([$lid,$uid]);
+        if ($check->fetch()) {
+            $pdo->prepare("DELETE FROM lectures WHERE id=? AND teacher_id=?")->execute([$lid,$uid]);
+            setFlash('success','Entry deleted.');
+        } else { setFlash('error','Cannot delete: entry is linked to a submitted or approved bill.'); }
+    }
+
+    header('Location: lectures.php?month='.($_POST['fm']??'').'&year='.($_POST['fy']??'')); exit;
+}
+
+$fm = (int)($_GET['month'] ?? 0);
+$fy = (int)($_GET['year']  ?? date('Y'));
+
+$sql    = "SELECT l.*,s.subject_name,s.subject_code,c.label AS class_label FROM lectures l LEFT JOIN subjects s ON s.id=l.subject_id LEFT JOIN classes c ON c.id=l.class_id WHERE l.teacher_id=?";
+$params = [$uid];
+if ($fm) { $sql.=" AND MONTH(l.lecture_date)=?"; $params[]=$fm; }
+if ($fy) { $sql.=" AND YEAR(l.lecture_date)=?";  $params[]=$fy; }
+$sql.=" ORDER BY l.lecture_date DESC";
+$stmt=$pdo->prepare($sql); $stmt->execute($params); $lectures=$stmt->fetchAll();
+
+$tTotals = ['theory'=>array_sum(array_column($lectures,'theory_hours')),'practical'=>array_sum(array_column($lectures,'practical_hours')),'other'=>array_sum(array_column($lectures,'other_hours'))];
+
+// Additional subjects for teachers who may teach more than one
+$allSubjects = $pdo->prepare("SELECT s.*,c.label AS class_label FROM subjects s JOIN classes c ON c.id=s.class_id WHERE c.department_id=(SELECT department_id FROM users WHERE id=?) AND s.is_active=1 ORDER BY s.subject_name");
+$allSubjects->execute([$uid]); $allSubjects=$allSubjects->fetchAll();
+
+renderHead('My Lectures');
+?>
+<div class="app-layout">
+<?php renderSidebar('lectures','teacher',$user); ?>
+<div class="main-content">
+<?php renderTopbar('My Lectures'); ?>
+<div class="page-body">
+    <?= getFlash() ?>
+    <div class="page-header">
+        <h1>My Lectures</h1>
+        <p>Record and manage your lecture sessions — Theory, Practical, Other</p>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 320px;gap:1.5rem;align-items:start">
+
+        <div>
+            <!-- Filter -->
+            <div class="card" style="margin-bottom:1rem">
+                <div class="card-body" style="padding:.8rem">
+                    <form method="GET" style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
+                        <div class="form-group" style="margin:0">
+                            <label>Month</label>
+                            <select name="month" class="form-control" style="width:130px">
+                                <option value="">All Months</option>
+                                <?php for($m=1;$m<=12;$m++): ?>
+                                <option value="<?= $m ?>" <?= $fm==$m?'selected':'' ?>><?= date('F',mktime(0,0,0,$m,1)) ?></option>
+                                <?php endfor; ?>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin:0">
+                            <label>Year</label>
+                            <select name="year" class="form-control" style="width:100px">
+                                <?php for($y=date('Y');$y>=date('Y')-3;$y--): ?>
+                                <option value="<?= $y ?>" <?= $fy==$y?'selected':'' ?>><?= $y ?></option>
+                                <?php endfor; ?>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-sm">Filter</button>
+                        <a href="lectures.php" class="btn btn-outline btn-sm">Clear</a>
+                    </form>
+                </div>
+            </div>
+
+            <?php if($fm && ($tTotals['theory']+$tTotals['practical']+$tTotals['other']) > 0): ?>
+            <div class="alert alert-info" style="margin-bottom:1rem">
+                📊 <strong><?= date('F',mktime(0,0,0,$fm,1)) ?> <?= $fy ?>:</strong>
+                Theory <?= number_format($tTotals['theory'],1) ?> hrs &nbsp;|&nbsp;
+                Practical <?= number_format($tTotals['practical'],1) ?> hrs &nbsp;|&nbsp;
+                Other <?= number_format($tTotals['other'],1) ?> hrs
+            </div>
+            <?php endif; ?>
+
+            <div class="card">
+                <div class="card-header"><h3>Lecture Entries (<?= count($lectures) ?>)</h3></div>
+                <?php if($lectures): ?>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>#</th><th>Date</th><th>Subject</th><th>Class</th><th>Theory Hrs</th><th>Practical Hrs</th><th>Other Hrs</th><th>Action</th></tr></thead>
+                        <tbody>
+                        <?php foreach($lectures as $i=>$l): ?>
+                        <tr>
+                            <td class="text-muted"><?= $i+1 ?></td>
+                            <td><?= fmtDate($l['lecture_date']) ?></td>
+                            <td><?= e($l['subject_name']??'—') ?> <?= $l['subject_code']?'<span class="badge badge-expert" style="font-size:.66rem">'.e($l['subject_code']).'</span>':'' ?></td>
+                            <td class="text-sm text-muted"><?= e($l['class_label']??'—') ?></td>
+                            <td><?= number_format($l['theory_hours'],1) ?></td>
+                            <td><?= number_format($l['practical_hours'],1) ?></td>
+                            <td><?= number_format($l['other_hours'],1) ?></td>
+                            <td>
+                                <form method="POST">
+                                    <input type="hidden" name="action"     value="delete">
+                                    <input type="hidden" name="lecture_id" value="<?= $l['id'] ?>">
+                                    <input type="hidden" name="fm" value="<?= $fm ?>">
+                                    <input type="hidden" name="fy" value="<?= $fy ?>">
+                                    <button class="btn btn-outline btn-sm" style="color:var(--rejected);border-color:#FECACA"
+                                            onclick="return confirmAction('Delete this entry?')">🗑</button>
+                                </form>
+                            </td>
+                        </tr>
+                        <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+                <?php else: ?>
+                <div class="empty-state"><div class="icon">📅</div><h3>No lectures found</h3><p>Add entries using the form.</p></div>
+                <?php endif; ?>
+            </div>
+        </div>
+
+        <!-- Add Form -->
+        <div class="card" style="position:sticky;top:80px">
+            <div class="card-header"><h3>➕ Add Lecture Entry</h3></div>
+            <div class="card-body">
+                <?php if(!$teacher['subject_id']): ?>
+                <div class="alert alert-warning">⚠️ No subject assigned. Please <a href="profile.php">update your profile</a> or ask HOD to assign a subject.</div>
+                <?php else: ?>
+                <form method="POST">
+                    <input type="hidden" name="action" value="add">
+                    <input type="hidden" name="fm" value="<?= $fm ?>">
+                    <input type="hidden" name="fy" value="<?= $fy ?>">
+
+                    <div class="form-group">
+                        <label>Date <span style="color:red">*</span></label>
+                        <input type="date" name="lecture_date" class="form-control" data-today required max="<?= date('Y-m-d') ?>">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Subject</label>
+                        <select name="subject_id" class="form-control">
+                            <?php if($teacher['subject_id']): ?>
+                            <option value="<?= $teacher['subject_id'] ?>" selected><?= e($teacher['subject_name'].' ('.$teacher['subject_code'].')') ?></option>
+                            <?php endif; ?>
+                            <?php foreach($allSubjects as $s): if($s['id']==$teacher['subject_id']) continue; ?>
+                            <option value="<?= $s['id'] ?>"><?= e($s['subject_name'].' ('.$s['subject_code'].')') ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                        <?php if($teacher['class_label']): ?>
+                        <div class="text-xs text-muted" style="margin-top:3px"><?= e($teacher['class_label']) ?></div>
+                        <?php endif; ?>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Theory Hours</label>
+                        <input type="number" name="theory_hours" class="form-control" step="0.5" min="0" value="<?= in_array($teacher['teacher_mode'],['theory','both'])?'1':'0' ?>">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Practical Hours</label>
+                        <input type="number" name="practical_hours" class="form-control" step="0.5" min="0" value="<?= in_array($teacher['teacher_mode'],['practical','both'])?'1':'0' ?>">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Other Hours</label>
+                        <input type="number" name="other_hours" class="form-control" step="0.5" min="0" value="0">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Notes (optional)</label>
+                        <textarea name="notes" class="form-control" rows="2" placeholder="Any remarks…"></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="width:100%">➕ Add Entry</button>
+                </form>
+                <?php endif; ?>
+            </div>
+        </div>
+
+    </div>
+</div>
+</div>
+</div>
+<?php renderFooter(); ?>

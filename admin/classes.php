@@ -1,0 +1,226 @@
+<?php
+// ============================================================
+//  admin/classes.php — Manage Classes (Year + Semester)
+// ============================================================
+require_once '../includes/db.php';
+require_once '../includes/auth.php';
+require_once '../includes/functions.php';
+requireAdmin();
+$user = currentUser();
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $action = $_POST['action'] ?? '';
+
+    if ($action === 'add') {
+        $dept   = (int)$_POST['department_id'];
+        $year   = (int)$_POST['year'];
+        $sem    = (int)$_POST['semester'];
+        $label  = trim($_POST['label'] ?? '');
+        if ($dept && $year && $sem && $label) {
+            try {
+                $pdo->prepare("INSERT INTO classes (department_id,year,semester,label) VALUES (?,?,?,?)")
+                    ->execute([$dept, $year, $sem, $label]);
+                logActivity($pdo, $user['id'], 'add_class', "Added class: $label");
+                setFlash('success', "Class \"$label\" added.");
+            } catch (PDOException $e) {
+                setFlash('error', 'Class already exists for this department/year/semester.');
+            }
+        } else {
+            setFlash('error', 'All fields are required.');
+        }
+    }
+
+    if ($action === 'edit') {
+        $id     = (int)$_POST['id'];
+        $label  = trim($_POST['label'] ?? '');
+        $active = (int)$_POST['is_active'];
+        if ($id && $label) {
+            $pdo->prepare("UPDATE classes SET label=?, is_active=? WHERE id=?")->execute([$label,$active,$id]);
+            setFlash('success', 'Class updated.');
+        }
+    }
+
+    header('Location: classes.php' . ($_POST['dept_filter'] ? '?dept='.(int)$_POST['dept_filter'] : ''));
+    exit;
+}
+
+$editId  = (int)($_GET['edit'] ?? 0);
+$editRow = null;
+if ($editId) {
+    $s = $pdo->prepare("SELECT * FROM classes WHERE id=?");
+    $s->execute([$editId]);
+    $editRow = $s->fetch();
+}
+
+$filterDept = (int)($_GET['dept'] ?? 0);
+$depts = $pdo->query("SELECT * FROM departments WHERE is_active=1 ORDER BY name")->fetchAll();
+
+$sql    = "SELECT c.*, d.name AS dept_name,
+            (SELECT COUNT(*) FROM subjects s WHERE s.class_id=c.id) AS subject_count
+           FROM classes c JOIN departments d ON d.id=c.department_id WHERE 1=1";
+$params = [];
+if ($filterDept) { $sql .= " AND c.department_id=?"; $params[] = $filterDept; }
+$sql .= " ORDER BY d.name, c.year, c.semester";
+$stmt = $pdo->prepare($sql); $stmt->execute($params);
+$classes = $stmt->fetchAll();
+
+renderHead('Classes');
+?>
+<div class="app-layout">
+<?php renderSidebar('classes','admin',$user); ?>
+<div class="main-content">
+<?php renderTopbar('Classes'); ?>
+<div class="page-body">
+    <?= getFlash() ?>
+    <div class="page-header">
+        <h1>Classes</h1>
+        <p>Manage year and semester combinations per department</p>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 340px;gap:1.5rem;align-items:start">
+
+        <!-- Table + Filter -->
+        <div>
+            <!-- Dept filter -->
+            <div class="card" style="margin-bottom:1rem">
+                <div class="card-body" style="padding:.9rem">
+                    <form method="GET" style="display:flex;gap:10px;align-items:flex-end">
+                        <div class="form-group" style="margin:0;flex:1">
+                            <label>Filter by Department</label>
+                            <select name="dept" class="form-control" onchange="this.form.submit()">
+                                <option value="">All Departments</option>
+                                <?php foreach ($depts as $d): ?>
+                                <option value="<?= $d['id'] ?>" <?= $filterDept==$d['id']?'selected':'' ?>>
+                                    <?= e($d['name']) ?>
+                                </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <a href="classes.php" class="btn btn-outline btn-sm">Clear</a>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>Classes (<?= count($classes) ?>)</h3>
+                </div>
+                <?php if ($classes): ?>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>#</th><th>Label</th><th>Department</th><th>Year</th><th>Sem</th><th>Subjects</th><th>Status</th><th>Action</th></tr></thead>
+                        <tbody>
+                        <?php foreach ($classes as $i => $c): ?>
+                        <tr>
+                            <td class="text-muted"><?= $i+1 ?></td>
+                            <td class="fw-500"><?= e($c['label']) ?></td>
+                            <td class="text-sm"><?= e($c['dept_name']) ?></td>
+                            <td><?= (int)$c['year'] ?></td>
+                            <td><?= (int)$c['semester'] ?></td>
+                            <td><?= (int)$c['subject_count'] ?></td>
+                            <td><?= $c['is_active'] ? '<span class="badge badge-approved">Active</span>' : '<span class="badge badge-rejected">Inactive</span>' ?></td>
+                            <td><a href="?edit=<?= $c['id'] ?>" class="btn btn-outline btn-sm">Edit</a></td>
+                        </tr>
+                        <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+                <?php else: ?>
+                <div class="empty-state"><div class="icon">📚</div><h3>No classes found</h3><p>Add a class using the form.</p></div>
+                <?php endif; ?>
+            </div>
+        </div>
+
+        <!-- Form -->
+        <div class="card" style="position:sticky;top:80px">
+            <div class="card-header"><h3><?= $editRow ? '✏️ Edit Class' : '➕ Add Class' ?></h3></div>
+            <div class="card-body">
+                <form method="POST">
+                    <input type="hidden" name="action" value="<?= $editRow ? 'edit' : 'add' ?>">
+                    <input type="hidden" name="dept_filter" value="<?= $filterDept ?>">
+                    <?php if ($editRow): ?>
+                    <input type="hidden" name="id" value="<?= $editRow['id'] ?>">
+                    <?php endif; ?>
+
+                    <?php if (!$editRow): ?>
+                    <div class="form-group">
+                        <label>Department <span style="color:red">*</span></label>
+                        <select name="department_id" class="form-control" required
+                                onchange="autoLabel()">
+                            <option value="">— Select —</option>
+                            <?php foreach ($depts as $d): ?>
+                            <option value="<?= $d['id'] ?>" data-short="<?= e($d['short_name']) ?>"
+                                    <?= $filterDept==$d['id']?'selected':'' ?>>
+                                <?= e($d['name']) ?>
+                            </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Year <span style="color:red">*</span></label>
+                        <select name="year" class="form-control" required onchange="autoLabel()">
+                            <option value="">— Select —</option>
+                            <option value="1">1st Year (FY)</option>
+                            <option value="2">2nd Year (SY)</option>
+                            <option value="3">3rd Year (TY)</option>
+                            <option value="4">4th Year (LY)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Semester <span style="color:red">*</span></label>
+                        <select name="semester" class="form-control" required onchange="autoLabel()">
+                            <option value="">— Select —</option>
+                            <?php for ($s=1;$s<=8;$s++): ?>
+                            <option value="<?= $s ?>">Semester <?= $s ?></option>
+                            <?php endfor; ?>
+                        </select>
+                    </div>
+                    <?php endif; ?>
+
+                    <div class="form-group">
+                        <label>Label <span style="color:red">*</span></label>
+                        <input type="text" name="label" id="label-input" class="form-control" required
+                               value="<?= e($editRow['label'] ?? '') ?>"
+                               placeholder="e.g. YEAR DEPARTMENT Sem">
+                    </div>
+
+                    <?php if ($editRow): ?>
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select name="is_active" class="form-control">
+                            <option value="1" <?= $editRow['is_active']?'selected':'' ?>>Active</option>
+                            <option value="0" <?= !$editRow['is_active']?'selected':'' ?>>Inactive</option>
+                        </select>
+                    </div>
+                    <?php endif; ?>
+
+                    <button type="submit" class="btn btn-primary" style="width:100%">
+                        <?= $editRow ? '💾 Update' : '➕ Add Class' ?>
+                    </button>
+                    <?php if ($editRow): ?>
+                    <a href="classes.php" class="btn btn-outline" style="width:100%;margin-top:8px;justify-content:center">Cancel</a>
+                    <?php endif; ?>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+</div>
+</div>
+<?php renderFooter(); ?>
+<script>
+const yearLabels = {1:'FY',2:'SY',3:'TY',4:'LY'};
+function autoLabel(){
+    const dept = document.querySelector('[name="department_id"]');
+    const year = document.querySelector('[name="year"]');
+    const sem  = document.querySelector('[name="semester"]');
+    const lbl  = document.getElementById('label-input');
+    if(!dept||!year||!sem||!lbl) return;
+    const short = dept.selectedOptions[0]?.dataset.short || '';
+    const yLbl  = yearLabels[year.value] || '';
+    if(short && yLbl && sem.value){
+        lbl.value = yLbl+' '+short+' Sem '+sem.value;
+    }
+}
+</script>
