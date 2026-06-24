@@ -316,29 +316,31 @@ function filterSemesters() {
     const opt    = dept.selectedOptions[0];
     const maxSem = parseInt(opt?.dataset.maxSem || '8');
 
+    if (!deptId || !yearV) {
+        sem.innerHTML = '<option value="">— Select Dept &amp; Year first —</option>';
+        return;
+    }
+
+    // Each year maps to exactly 2 semesters: Year Y → Sem (2Y-1) and (2Y)
+    const yearSems = [yearV * 2 - 1, yearV * 2].filter(s => s <= maxSem);
+
     // Semesters already taken for this dept+year
     const taken = new Set();
     if (deptId && takenMap[deptId]) {
         takenMap[deptId].forEach(([y, s]) => { if (y === yearV) taken.add(s); });
     }
 
-    const allSems = [1,2,3,4,5,6,7,8].filter(s => s <= maxSem);
     const prevVal = sem.value;
     sem.innerHTML = '<option value="">— Select Semester —</option>';
 
-    if (!deptId || !yearV) {
-        sem.innerHTML = '<option value="">— Select Dept &amp; Year first —</option>';
-        return;
-    }
-
     let added = 0;
-    allSems.forEach(s => {
+    yearSems.forEach(s => {
         if (!taken.has(s)) {
-            const opt = document.createElement('option');
-            opt.value = s;
-            opt.textContent = 'Semester ' + s;
-            if (parseInt(prevVal) === s) opt.selected = true;
-            sem.appendChild(opt);
+            const o = document.createElement('option');
+            o.value = s;
+            o.textContent = 'Semester ' + s;
+            if (parseInt(prevVal) === s) o.selected = true;
+            sem.appendChild(o);
             added++;
         }
     });
@@ -347,6 +349,7 @@ function filterSemesters() {
         sem.innerHTML = '<option value="">All semesters taken for this year</option>';
     }
 }
+
 
 function autoLabel(){
     const dept = document.getElementById('sel-dept');
