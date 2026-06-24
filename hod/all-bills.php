@@ -44,7 +44,7 @@ renderHead('All Bills');
             <form method="GET" style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
                 <div class="form-group" style="margin:0">
                     <label>Status</label>
-                    <select name="status" class="form-control" style="width:130px">
+                    <select name="status" class="form-control" style="width:180px">
                         <option value="">All</option>
                         <option value="draft"    <?= $fStatus==='draft'   ?'selected':'' ?>>Draft</option>
                         <option value="pending"  <?= $fStatus==='pending' ?'selected':'' ?>>Pending</option>
@@ -54,7 +54,7 @@ renderHead('All Bills');
                 </div>
                 <div class="form-group" style="margin:0">
                     <label>Teacher</label>
-                    <select name="teacher" class="form-control" style="width:180px">
+                    <select name="teacher" class="form-control" style="width:200px">
                         <option value="">All Teachers</option>
                         <?php foreach($teachers as $t): ?>
                         <option value="<?= $t['id'] ?>" <?= $fTeacher==$t['id']?'selected':'' ?>><?= e($t['name']) ?></option>
@@ -63,7 +63,7 @@ renderHead('All Bills');
                 </div>
                 <div class="form-group" style="margin:0">
                     <label>Month</label>
-                    <select name="month" class="form-control" style="width:130px">
+                    <select name="month" class="form-control" style="width:180px">
                         <option value="">All Months</option>
                         <?php for($m=1;$m<=12;$m++): ?>
                         <option value="<?= $m ?>" <?= $fMonth==$m?'selected':'' ?>><?= date('F',mktime(0,0,0,$m,1)) ?></option>
@@ -72,15 +72,15 @@ renderHead('All Bills');
                 </div>
                 <div class="form-group" style="margin:0">
                     <label>Year</label>
-                    <select name="year" class="form-control" style="width:100px">
+                    <select name="year" class="form-control" style="width:180px">
                         <option value="">All</option>
                         <?php for($y=date('Y');$y>=date('Y')-4;$y--): ?>
                         <option value="<?= $y ?>" <?= $fYear==$y?'selected':'' ?>><?= $y ?></option>
                         <?php endfor; ?>
                     </select>
                 </div>
-                <button type="submit" class="btn btn-primary btn-sm">Filter</button>
-                <a href="all-bills.php" class="btn btn-outline btn-sm">Clear</a>
+                <button type="submit" class="btn btn-primary btn-sm" style="padding: 10px 20px;">Filter</button>
+                <a href="all-bills.php" class="btn btn-outline btn-sm" style="padding: 7px 15px;">Clear</a>
             </form>
         </div>
     </div>

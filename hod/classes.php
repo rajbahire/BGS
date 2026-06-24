@@ -172,9 +172,7 @@ renderHead('HOD — Classes');
                         <td class="fw-500"><?= e($c['label']) ?></td>
                         <td><?= (int)$c['year'] ?></td>
                         <td>Sem <?= (int)$c['semester'] ?></td>
-                        <td>
-                            <span class="badge badge-draft"><?= (int)$c['subject_count'] ?> subjects</span>
-                        </td>
+                        <td><?= (int)$c['subject_count'] ?></td>
                         <td>
                             <?= $c['is_active']
                                 ? '<span class="badge badge-approved">Active</span>'
@@ -187,10 +185,7 @@ renderHead('HOD — Classes');
                                       onsubmit="return confirmAction('<?= $c['subject_count'] > 0 ? 'This class has subjects and will be deactivated. Continue?' : 'Delete this class permanently?' ?>')">
                                     <input type="hidden" name="action" value="delete">
                                     <input type="hidden" name="id" value="<?= $c['id'] ?>">
-                                    <button type="submit" class="btn btn-sm"
-                                            style="background:rgba(239,68,68,.1);color:#EF4444;border:1px solid rgba(239,68,68,.3)">
-                                        🗑 <?= $c['subject_count'] > 0 ? 'Deactivate' : 'Delete' ?>
-                                    </button>
+                                    <button type="submit" class="btn btn-sm btn-delete">🗑 <?= $c['subject_count'] > 0 ? 'Deactivate' : 'Delete' ?></button>
                                 </form>
                             </div>
                         </td>

@@ -257,7 +257,7 @@ renderHead('Classes');
                         <label>Label <span style="color:red">*</span></label>
                         <input type="text" name="label" id="label-input" class="form-control" required
                                value="<?= e($editRow['label'] ?? '') ?>"
-                               placeholder="e.g. YEAR DEPARTMENT Sem">
+                               placeholder="e.g. Year-Department-Semister">
                     </div>
 
                     <?php if ($editRow): ?>
