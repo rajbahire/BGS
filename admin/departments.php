@@ -136,7 +136,7 @@ renderHead('Departments');
                             <?php endif; ?>
                         </td>
                         <td>
-                            <a href="?edit=<?= $d['id'] ?>" class="btn btn-outline btn-sm">Edit</a>
+                            <a href="?edit=<?= $d['id'] ?>" class="btn btn-outline btn-sm">✏️ Edit</a>
                             <form method="POST" style="display:inline" onsubmit="return confirmAction('Delete this department? Linked classes and users will block the delete.')">
                                 <input type="hidden" name="action" value="delete">
                                 <input type="hidden" name="id" value="<?= $d['id'] ?>">

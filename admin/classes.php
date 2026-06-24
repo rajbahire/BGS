@@ -155,7 +155,7 @@ renderHead('Classes');
                             <td><?= (int)$c['semester'] ?></td>
                             <td><?= (int)$c['subject_count'] ?></td>
                             <td><?= $c['is_active'] ? '<span class="badge badge-approved">Active</span>' : '<span class="badge badge-rejected">Inactive</span>' ?></td>
-                        <td><a href="?edit=<?= $c['id'] ?>" class="btn btn-outline btn-sm">Edit</a>
+                        <td><a href="?edit=<?= $c['id'] ?>" class="btn btn-outline btn-sm">✏️ Edit</a>
                             <form method="POST" style="display:inline" onsubmit="return confirmAction('<?= $c['subject_count']>0 ? 'Class has subjects — it will be deactivated.' : 'Delete this class permanently?' ?>')">
                                 <input type="hidden" name="action" value="delete">
                                 <input type="hidden" name="id" value="<?= $c['id'] ?>">
@@ -257,7 +257,7 @@ renderHead('Classes');
                         <label>Label <span style="color:red">*</span></label>
                         <input type="text" name="label" id="label-input" class="form-control" required
                                value="<?= e($editRow['label'] ?? '') ?>"
-                               placeholder="e.g. Year-Department-Semister">
+                               placeholder="e.g. Year-Department-Semester">
                     </div>
 
                     <?php if ($editRow): ?>

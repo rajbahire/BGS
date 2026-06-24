@@ -162,7 +162,7 @@ renderHead('Subjects');
                             <td class="text-sm"><?= e($s['class_label']) ?><br><span class="text-muted text-xs"><?= e($s['dept_name']) ?></span></td>
                             <td><?= modeBadge($s['mode']) ?></td>
                             <td><?= $s['is_active'] ? '<span class="badge badge-approved">Active</span>' : '<span class="badge badge-rejected">Inactive</span>' ?></td>
-                             <td><a href="?edit=<?= $s['id'] ?>&dept=<?= $filterDept ?>&class=<?= $filterClass ?>" class="btn btn-outline btn-sm">Edit</a>
+                             <td><a href="?edit=<?= $s['id'] ?>&dept=<?= $filterDept ?>&class=<?= $filterClass ?>" class="btn btn-outline btn-sm">✏️ Edit</a>
                                 <form method="POST" style="display:inline" onsubmit="return confirmAction('Delete / deactivate this subject?')">
                                     <input type="hidden" name="action" value="delete">
                                     <input type="hidden" name="id" value="<?= $s['id'] ?>">
