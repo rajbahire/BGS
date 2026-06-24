@@ -200,11 +200,7 @@ renderHead('Manage Users');
                             <div class="d-flex gap-8" style="flex-wrap:wrap">
                                 <a href="?edit=<?= $t['id'] ?>&tab=teachers" class="btn btn-outline btn-sm">✏️ Edit</a>
                                 <form method="POST" style="margin:0"><input type="hidden" name="action" value="reset_password"><input type="hidden" name="id" value="<?= $t['id'] ?>"><input type="hidden" name="urole" value="teacher"><input type="hidden" name="tab" value="teachers"><button class="btn btn-outline btn-sm" onclick="return confirmAction('Reset password to teacher@1234?')">🔑</button></form>
-                                <?php if ($t['is_active']): ?>
                                 <form method="POST" style="margin:0" onsubmit="return confirmAction('Delete this teacher permanently? This cannot be undone.')"><input type="hidden" name="action" value="delete"><input type="hidden" name="id" value="<?= $t['id'] ?>"><input type="hidden" name="urole" value="teacher"><input type="hidden" name="tab" value="teachers"><button class="btn btn-delete btn-sm">🗑 Delete</button></form>
-                                <?php else: ?>
-                                <form method="POST" style="margin:0" onsubmit="return confirmAction('Reactivate this teacher?')"><input type="hidden" name="action" value="activate"><input type="hidden" name="id" value="<?= $t['id'] ?>"><input type="hidden" name="urole" value="teacher"><input type="hidden" name="tab" value="teachers"><button class="btn btn-sm" style="background:rgba(34,197,94,.1);color:#16A34A;border:1px solid rgba(34,197,94,.3)">✅ Reactivate</button></form>
-                                <?php endif; ?>
                             </div>
                         </td>
                     </tr>
@@ -217,7 +213,9 @@ renderHead('Manage Users');
 
         <!-- Add/Edit Teacher Form -->
         <div class="card" style="position:sticky;top:80px">
-            <div class="card-header"><h3><?= $editRow?'✏️ Edit':'➕ Add Teacher' ?></h3></div>
+            <div class="card-header">
+                <h3><?= $editRow?'✏️ Edit Teacher':'➕ Add Teacher' ?></h3>
+            </div>
             <div class="card-body">
                 <form method="POST">
                     <input type="hidden" name="action" value="<?= $editRow?'edit':'add_teacher' ?>">
@@ -230,28 +228,30 @@ renderHead('Manage Users');
                     <?php endif; ?>
                     <div class="form-group"><label>Phone</label><input type="text" name="phone" class="form-control" value="<?= e($editRow['phone']??'') ?>"></div>
                     <div class="form-group"><label>Teacher Type <span style="color:red">*</span></label>
-                        <select name="teacher_type" class="form-control">
+                        <select name="teacher_type" class="form-control" required>
+                            <option value="">— Select Type —</option>
                             <?php foreach(['regular'=>'Regular','expert'=>'Expert','sectional_expert'=>'Sectional Expert','adjunct'=>'Adjunct'] as $v=>$l): ?>
                             <option value="<?= $v ?>" <?= ($editRow['teacher_type']??'')===$v?'selected':'' ?>><?= $l ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>
                     <div class="form-group"><label>Mode <span style="color:red">*</span></label>
-                        <select name="teacher_mode" class="form-control">
+                        <select name="teacher_mode" class="form-control" required>
+                            <option value="">— Select Mode —</option>
                             <option value="theory"    <?= ($editRow['teacher_mode']??'')==='theory'   ?'selected':'' ?>>Theory</option>
                             <option value="practical" <?= ($editRow['teacher_mode']??'')==='practical'?'selected':'' ?>>Practical</option>
                             <option value="both"      <?= ($editRow['teacher_mode']??'')==='both'     ?'selected':'' ?>>Theory & Practical</option>
                         </select>
                     </div>
-                    <div class="form-group"><label>Assigned Subject <span style="color:red">*</span></label>
+                    <div class="form-group"><label>Assigned Subject</label>
                         <select name="subject_id" class="form-control">
-                            <option value="">— None —</option>
+                            <option value="">— Select Subject —</option>
                             <?php foreach($subjects as $s): ?>
                             <option value="<?= $s['id'] ?>" <?= ($editRow['subject_id']??0)==$s['id']?'selected':'' ?>><?= e($s['subject_name'].' ('.$s['subject_code'].')') ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>
-                    <div class="form-group"><label>Appointment Order No. <span style="color:red">*</span></label><input type="text" name="appointment_order_no" class="form-control" value="<?= e($editRow['appointment_order_no']??'') ?>"></div>
+                    <div class="form-group"><label>Appointment Order No.</label><input type="text" name="appointment_order_no" class="form-control" value="<?= e($editRow['appointment_order_no']??'') ?>"></div>
                     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
                         <div class="form-group"><label>Rate Theory (₹) <span style="color:red">*</span></label><input type="number" name="rate_theory" class="form-control" step="0.01" min="0" value="<?= $editRow['rate_theory']??0 ?>"></div>
                         <div class="form-group"><label>Rate Practical (₹) <span style="color:red">*</span></label><input type="number" name="rate_practical" class="form-control" step="0.01" min="0" value="<?= $editRow['rate_practical']??0 ?>"></div>
@@ -286,11 +286,7 @@ renderHead('Manage Users');
                             <div class="d-flex gap-8" style="flex-wrap:wrap">
                                 <a href="?edit=<?= $s['id'] ?>&tab=students" class="btn btn-outline btn-sm">✏️ Edit</a>
                                 <form method="POST" style="margin:0"><input type="hidden" name="action" value="reset_password"><input type="hidden" name="id" value="<?= $s['id'] ?>"><input type="hidden" name="urole" value="student"><input type="hidden" name="tab" value="students"><button class="btn btn-outline btn-sm" onclick="return confirmAction('Reset password to student@1234?')">🔑</button></form>
-                                <?php if ($s['is_active']): ?>
-                                <form method="POST" style="margin:0" onsubmit="return confirmAction('Deactivate this student? They will lose access.')"><input type="hidden" name="action" value="deactivate"><input type="hidden" name="id" value="<?= $s['id'] ?>"><input type="hidden" name="urole" value="student"><input type="hidden" name="tab" value="students"><button class="btn btn-sm" style="background:rgba(239,68,68,.1);color:#EF4444;border:1px solid rgba(239,68,68,.3)">🚫 Deactivate</button></form>
-                                <?php else: ?>
-                                <form method="POST" style="margin:0" onsubmit="return confirmAction('Reactivate this student?')"><input type="hidden" name="action" value="activate"><input type="hidden" name="id" value="<?= $s['id'] ?>"><input type="hidden" name="urole" value="student"><input type="hidden" name="tab" value="students"><button class="btn btn-sm" style="background:rgba(34,197,94,.1);color:#16A34A;border:1px solid rgba(34,197,94,.3)">✅ Reactivate</button></form>
-                                <?php endif; ?>
+                                <form method="POST" style="margin:0" onsubmit="return confirmAction('Delete this student permanently? This cannot be undone.')"><input type="hidden" name="action" value="delete"><input type="hidden" name="id" value="<?= $s['id'] ?>"><input type="hidden" name="urole" value="student"><input type="hidden" name="tab" value="students"><button class="btn btn-delete btn-sm">🗑 Delete</button></form>
                             </div>
                         </td>
                     </tr>
@@ -303,7 +299,9 @@ renderHead('Manage Users');
 
         <!-- Add/Edit Student Form -->
         <div class="card" style="position:sticky;top:80px">
-            <div class="card-header"><h3><?= ($editRow&&$editRow['role']==='student')?'✏️ Edit Student':'➕ Add Student' ?></h3></div>
+            <div class="card-header">
+                <h3><?= ($editRow&&$editRow['role']==='student')?'✏️ Edit Student':'➕ Add Student' ?></h3>
+            </div>
             <div class="card-body">
                 <form method="POST">
                     <input type="hidden" name="action" value="<?= ($editRow&&$editRow['role']==='student')?'edit':'add_student' ?>">

@@ -90,8 +90,8 @@ renderHead('Add Work');
                                 <?php endfor; ?>
                             </select>
                         </div>
-                        <button type="submit" class="btn btn-primary btn-sm">Filter</button>
-                        <a href="add-work.php" class="btn btn-outline btn-sm">Clear</a>
+                        <button type="submit" class="btn btn-primary  btn-filter btn-sm" style="padding: 10px 20px;">Filter</button>
+                        <a href="add-work.php" class="btn btn-outline btn-sm btn-clear" style="padding: 7px 15px;">Clear</a>
                     </form>
                 </div>
             </div>
