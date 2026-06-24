@@ -121,6 +121,10 @@ $deptRow  = $deptRow->fetch();
 $deptName  = $deptRow['name']      ?? ($user['dept_name'] ?: 'Your Department');
 $deptShort = $deptRow['short_name'] ?? '';
 
+// ── Year/Semester limits based on department ─────────────────
+$maxYear = ($deptShort === 'MCA') ? 2 : 4;
+$maxSem  = ($deptShort === 'MCA') ? 4 : 8;
+
 // ── Build taken year+semester pairs for this dept (for JS filter) ─
 $takenPairs = array_map(
     fn($c) => [(int)$c['year'], (int)$c['semester']],
@@ -235,8 +239,12 @@ renderHead('HOD — Classes');
                             <option value="">— Select Year —</option>
                             <option value="1">1st Year (FY)</option>
                             <option value="2">2nd Year (SY)</option>
+                            <?php if ($maxYear >= 3): ?>
                             <option value="3">3rd Year (TY)</option>
+                            <?php endif; ?>
+                            <?php if ($maxYear >= 4): ?>
                             <option value="4">4th Year (LY)</option>
+                            <?php endif; ?>
                         </select>
                     </div>
 
@@ -257,8 +265,12 @@ renderHead('HOD — Classes');
                                 onchange="autoLabel()">
                             <option value="1" <?= $editRow['year']==1?'selected':'' ?>>1st Year (FY)</option>
                             <option value="2" <?= $editRow['year']==2?'selected':'' ?>>2nd Year (SY)</option>
+                            <?php if ($maxYear >= 3): ?>
                             <option value="3" <?= $editRow['year']==3?'selected':'' ?>>3rd Year (TY)</option>
+                            <?php endif; ?>
+                            <?php if ($maxYear >= 4): ?>
                             <option value="4" <?= $editRow['year']==4?'selected':'' ?>>4th Year (LY)</option>
+                            <?php endif; ?>
                         </select>
                     </div>
                     <!-- Semester select (editable) -->
@@ -266,7 +278,7 @@ renderHead('HOD — Classes');
                         <label>Semester <span style="color:red">*</span></label>
                         <select name="semester" id="sel-sem-edit" class="form-control" required
                                 onchange="autoLabel()">
-                            <?php for ($s = 1; $s <= 8; $s++): ?>
+                            <?php for ($s = 1; $s <= $maxSem; $s++): ?>
                             <option value="<?= $s ?>" <?= $editRow['semester']==$s?'selected':'' ?>>Semester <?= $s ?></option>
                             <?php endfor; ?>
                         </select>
@@ -311,6 +323,7 @@ renderHead('HOD — Classes');
 const deptShort  = '<?= e($deptShort) ?>';
 const yLabels    = {1:'FY',2:'SY',3:'TY',4:'LY'};
 const takenPairs = <?= json_encode($takenPairs) ?>; // [[year,sem], ...] already taken
+const maxSem     = <?= (int)$maxSem ?>;
 
 function filterSemesters() {
     const year = document.getElementById('sel-year');
@@ -331,7 +344,7 @@ function filterSemesters() {
 
     sem.innerHTML = '<option value="">— Select Semester —</option>';
     let added = 0;
-    [1,2,3,4,5,6,7,8].forEach(s => {
+    [1,2,3,4,5,6,7,8].filter(s => s <= maxSem).forEach(s => {
         if (!taken.has(s)) {
             const opt = document.createElement('option');
             opt.value = s;

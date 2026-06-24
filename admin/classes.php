@@ -189,10 +189,14 @@ renderHead('Classes');
                     <div class="form-group">
                         <label>Department <span style="color:red">*</span></label>
                         <select name="department_id" id="sel-dept" class="form-control" required
-                                onchange="filterSemesters(); autoLabel();">
+                                onchange="filterYears(); filterSemesters(); autoLabel();">
                             <option value="">— Select —</option>
-                            <?php foreach ($depts as $d): ?>
+                            <?php foreach ($depts as $d):
+                                $maxYear = ($d['short_name'] === 'MCA') ? 2 : 4;
+                                $maxSem  = ($d['short_name'] === 'MCA') ? 4 : 8;
+                            ?>
                             <option value="<?= $d['id'] ?>" data-short="<?= e($d['short_name']) ?>"
+                                    data-max-year="<?= $maxYear ?>" data-max-sem="<?= $maxSem ?>"
                                     <?= $filterDept==$d['id']?'selected':'' ?>>
                                 <?= e($d['name']) ?>
                             </option>
@@ -218,22 +222,31 @@ renderHead('Classes');
                         </select>
                     </div>
 
-                    <?php else: ?>
+                    <?php else:
+                        // Determine limits for the dept being edited
+                        $editDeptShortForEdit = $pdo->query("SELECT short_name FROM departments WHERE id={$editRow['department_id']} LIMIT 1")->fetchColumn();
+                        $editMaxYear = ($editDeptShortForEdit === 'MCA') ? 2 : 4;
+                        $editMaxSem  = ($editDeptShortForEdit === 'MCA') ? 4 : 8;
+                    ?>
                     <div class="form-group">
                         <label>Year <span style="color:red">*</span></label>
                         <select name="year" id="sel-year-edit" class="form-control" required
                                 onchange="autoLabel()">
                             <option value="1" <?= $editRow['year']==1?'selected':'' ?>>1st Year (FY)</option>
                             <option value="2" <?= $editRow['year']==2?'selected':'' ?>>2nd Year (SY)</option>
+                            <?php if ($editMaxYear >= 3): ?>
                             <option value="3" <?= $editRow['year']==3?'selected':'' ?>>3rd Year (TY)</option>
+                            <?php endif; ?>
+                            <?php if ($editMaxYear >= 4): ?>
                             <option value="4" <?= $editRow['year']==4?'selected':'' ?>>4th Year (LY)</option>
+                            <?php endif; ?>
                         </select>
                     </div>
                     <div class="form-group">
                         <label>Semester <span style="color:red">*</span></label>
                         <select name="semester" id="sel-sem-edit" class="form-control" required
                                 onchange="autoLabel()">
-                            <?php for ($s = 1; $s <= 8; $s++): ?>
+                            <?php for ($s = 1; $s <= $editMaxSem; $s++): ?>
                             <option value="<?= $s ?>" <?= $editRow['semester']==$s?'selected':'' ?>>Semester <?= $s ?></option>
                             <?php endfor; ?>
                         </select>
@@ -277,6 +290,21 @@ const yearLabels = {1:'FY',2:'SY',3:'TY',4:'LY'};
 const takenMap   = <?= json_encode($takenMap) ?>; // {deptId: [[year,sem],...], ...}
 const editDeptShort = '<?= $editRow ? e($pdo->query("SELECT short_name FROM departments WHERE id={$editRow['department_id']} LIMIT 1")->fetchColumn()) : '' ?>';
 
+function filterYears() {
+    const dept  = document.getElementById('sel-dept');
+    const year  = document.getElementById('sel-year');
+    if (!dept || !year) return;
+    const opt   = dept.selectedOptions[0];
+    const maxY  = parseInt(opt?.dataset.maxYear || '4');
+    const allYearOpts = year.querySelectorAll('option[value]');
+    allYearOpts.forEach(o => {
+        const v = parseInt(o.value);
+        if (!v) return; // skip placeholder
+        o.hidden = (v > maxY);
+        if (v > maxY && year.value == v) year.value = '';
+    });
+}
+
 function filterSemesters() {
     const dept  = document.getElementById('sel-dept');
     const year  = document.getElementById('sel-year');
@@ -285,6 +313,8 @@ function filterSemesters() {
 
     const deptId = parseInt(dept.value) || 0;
     const yearV  = parseInt(year.value) || 0;
+    const opt    = dept.selectedOptions[0];
+    const maxSem = parseInt(opt?.dataset.maxSem || '8');
 
     // Semesters already taken for this dept+year
     const taken = new Set();
@@ -292,9 +322,7 @@ function filterSemesters() {
         takenMap[deptId].forEach(([y, s]) => { if (y === yearV) taken.add(s); });
     }
 
-    // All semesters for a year: odd year → odd sems, even year → even sems
-    // But keep it flexible — just show all 8 and remove taken ones
-    const allSems = [1,2,3,4,5,6,7,8];
+    const allSems = [1,2,3,4,5,6,7,8].filter(s => s <= maxSem);
     const prevVal = sem.value;
     sem.innerHTML = '<option value="">— Select Semester —</option>';
 

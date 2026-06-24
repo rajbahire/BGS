@@ -14,10 +14,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
 
     if ($action === 'profile') {
-        $name  = trim($_POST['name']  ?? '');
-        $phone = trim($_POST['phone'] ?? '');
+        $name   = trim($_POST['name']   ?? '');
+        $phone  = trim($_POST['phone']  ?? '');
+        $appNo  = trim($_POST['appointment_order_no'] ?? '');
         if ($name) {
-            $pdo->prepare("UPDATE users SET name=?,phone=? WHERE id=?")->execute([$name,$phone,$uid]);
+            $pdo->prepare("UPDATE users SET name=?,phone=?,appointment_order_no=? WHERE id=?")->execute([$name,$phone,$appNo,$uid]);
             $_SESSION['user_name'] = $name;
             setFlash('success','Profile updated.');
         } else { setFlash('error','Name is required.'); }
@@ -113,11 +114,11 @@ renderHead('My Profile');
                     <div class="form-group"><label>Full Name <span style="color:red">*</span></label><input type="text" name="name" class="form-control" required value="<?= e($row['name']) ?>"></div>
                     <div class="form-group"><label>Email</label><input type="email" class="form-control" value="<?= e($row['email']) ?>" disabled></div>
                     <div class="form-group"><label>Phone <span style="color:red">*</span></label><input type="text" name="phone" class="form-control" required value="<?= e($row['phone']??'') ?>"></div>
-                    <div class="form-group"><label>Department (set by HOD)</label><input type="text" class="form-control" value="<?= e($row['dept_name']??'—') ?>" disabled></div>
-                    <div class="form-group"><label>Teacher Type (set by HOD)</label><input type="text" class="form-control" value="<?= ucfirst(str_replace('_',' ',$row['teacher_type']??'—')) ?>" disabled></div>
-                    <div class="form-group"><label>Mode (set by HOD)</label><input type="text" class="form-control" value="<?= ucfirst($row['teacher_mode']??'—') ?>" disabled></div>
-                    <div class="form-group"><label>Assigned Subject (set by HOD)</label><input type="text" class="form-control" value="<?= e(($row['subject_name']??'—').($row['subject_code']?' ('.$row['subject_code'].')':'')) ?>" disabled></div>
-                    <div class="form-group"><label>Appointment Order No. (set by HOD)</label><input type="text" class="form-control" value="<?= e($row['appointment_order_no']??'—') ?>" disabled></div>
+                    <div class="form-group"><label>Department</label><input type="text" class="form-control" value="<?= e($row['dept_name']??'—') ?>" disabled></div>
+                    <div class="form-group"><label>Teacher Type</label><input type="text" class="form-control" value="<?= ucfirst(str_replace('_',' ',$row['teacher_type']??'—')) ?>" disabled></div>
+                    <div class="form-group"><label>Mode</label><input type="text" class="form-control" value="<?= ucfirst($row['teacher_mode']??'—') ?>" disabled></div>
+                    <div class="form-group"><label>Assigned Subject</label><input type="text" class="form-control" value="<?= e(($row['subject_name']??'—').($row['subject_code']?' ('.$row['subject_code'].')':'')) ?>" disabled></div>
+                    <div class="form-group"><label>Appointment Order No. <span style="color:red">*</span></label><input type="text" name="appointment_order_no" class="form-control" value="<?= e($row['appointment_order_no']??'') ?>" placeholder="Enter appointment order number"></div>
                     <button type="submit" class="btn btn-primary">💾 Save Changes</button>
                 </form>
 

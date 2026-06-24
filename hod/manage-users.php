@@ -96,6 +96,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
+    if ($action === 'delete') {
+        $id    = (int)$_POST['id'];
+        $urole = $_POST['urole'] ?? 'teacher';
+        if ($id) {
+            $check = $pdo->prepare("SELECT id,name FROM users WHERE id=? AND department_id=?");
+            $check->execute([$id, $deptId]);
+            $row = $check->fetch();
+            if ($row) {
+                $pdo->prepare("DELETE FROM users WHERE id=? AND department_id=?")->execute([$id,$deptId]);
+                logActivity($pdo,$user['id'],'delete_user',"HOD deleted {$urole}: {$row['name']}");
+                setFlash('success',"User \"{$row['name']}\" deleted permanently.");
+            } else {
+                setFlash('error','User not found or access denied.');
+            }
+        }
+    }
+
     if ($action === 'activate') {
         $id    = (int)$_POST['id'];
         $urole = $_POST['urole'] ?? 'teacher';
@@ -166,15 +183,16 @@ renderHead('Manage Users');
             <?php if($teachers): ?>
             <div class="table-wrap">
                 <table>
-                    <thead><tr><th>Name</th><th>Type</th><th>Subject</th><th>Rate T/P</th><th>Status</th><th>Actions</th></tr></thead>
+                    <thead><tr><th>#</th><th>Name</th><th>Type</th><th>Subject</th><th>Rate T/P</th><th>Status</th><th>Actions</th></tr></thead>
                     <tbody>
-                    <?php foreach($teachers as $t): ?>
+                    <?php foreach($teachers as $i => $t): ?>
                     <tr>
+                        <td class="text-muted"><?= $i + 1 ?></td>
                         <td>
                             <div class="fw-500"><?= e($t['name']) ?></div>
                             <div class="text-xs text-muted"><?= e($t['email']) ?></div>
                         </td>
-                        <td><?= teacherTypeBadge($t['teacher_type']??'regular') ?><br><?= modeBadge($t['teacher_mode']??'theory') ?></td>
+                        <td><?= teacherTypeBadge($t['teacher_type']??'regular') ?></td>
                         <td class="text-sm"><?= $t['subject_name'] ? e($t['subject_name']).'<br><span class="badge badge-expert" style="font-size:.66rem">'.e($t['subject_code']).'</span>' : '—' ?></td>
                         <td class="text-sm"><?= formatINR($t['rate_theory']) ?> / <?= formatINR($t['rate_practical']) ?></td>
                         <td><?= $t['is_active']?'<span class="badge badge-approved">Active</span>':'<span class="badge badge-rejected">Inactive</span>' ?></td>
@@ -183,7 +201,7 @@ renderHead('Manage Users');
                                 <a href="?edit=<?= $t['id'] ?>&tab=teachers" class="btn btn-outline btn-sm">✏️ Edit</a>
                                 <form method="POST" style="margin:0"><input type="hidden" name="action" value="reset_password"><input type="hidden" name="id" value="<?= $t['id'] ?>"><input type="hidden" name="urole" value="teacher"><input type="hidden" name="tab" value="teachers"><button class="btn btn-outline btn-sm" onclick="return confirmAction('Reset password to teacher@1234?')">🔑</button></form>
                                 <?php if ($t['is_active']): ?>
-                                <form method="POST" style="margin:0" onsubmit="return confirmAction('Deactivate this teacher? They will lose access.')"><input type="hidden" name="action" value="deactivate"><input type="hidden" name="id" value="<?= $t['id'] ?>"><input type="hidden" name="urole" value="teacher"><input type="hidden" name="tab" value="teachers"><button class="btn btn-sm" style="background:rgba(239,68,68,.1);color:#EF4444;border:1px solid rgba(239,68,68,.3)">🚫 Deactivate</button></form>
+                                <form method="POST" style="margin:0" onsubmit="return confirmAction('Delete this teacher permanently? This cannot be undone.')"><input type="hidden" name="action" value="delete"><input type="hidden" name="id" value="<?= $t['id'] ?>"><input type="hidden" name="urole" value="teacher"><input type="hidden" name="tab" value="teachers"><button class="btn btn-delete btn-sm">🗑 Delete</button></form>
                                 <?php else: ?>
                                 <form method="POST" style="margin:0" onsubmit="return confirmAction('Reactivate this teacher?')"><input type="hidden" name="action" value="activate"><input type="hidden" name="id" value="<?= $t['id'] ?>"><input type="hidden" name="urole" value="teacher"><input type="hidden" name="tab" value="teachers"><button class="btn btn-sm" style="background:rgba(34,197,94,.1);color:#16A34A;border:1px solid rgba(34,197,94,.3)">✅ Reactivate</button></form>
                                 <?php endif; ?>
@@ -254,10 +272,11 @@ renderHead('Manage Users');
             <?php if($students): ?>
             <div class="table-wrap">
                 <table>
-                    <thead><tr><th>Name</th><th>Email</th><th>Class</th><th>Rate/Hr</th><th>Status</th><th>Actions</th></tr></thead>
+                    <thead><tr><th>#</th><th>Name</th><th>Email</th><th>Class</th><th>Rate/Hr</th><th>Status</th><th>Actions</th></tr></thead>
                     <tbody>
-                    <?php foreach($students as $s): ?>
+                    <?php foreach($students as $i => $s): ?>
                     <tr>
+                        <td class="text-muted"><?= $i + 1 ?></td>
                         <td class="fw-500"><?= e($s['name']) ?></td>
                         <td class="text-sm"><?= e($s['email']) ?></td>
                         <td class="text-sm"><?= e($s['class_label']??'—') ?></td>

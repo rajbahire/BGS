@@ -82,8 +82,8 @@ renderHead('Profile');
                         <input type="text" name="name" class="form-control" required value="<?= e($row['name']) ?>"></div>
                     <div class="form-group"><label>Email</label>
                         <input type="email" class="form-control" value="<?= e($row['email']) ?>" disabled></div>
-                    <div class="form-group"><label>Phone</label>
-                        <input type="text" name="phone" class="form-control" value="<?= e($row['phone']??'') ?>"></div>
+                    <div class="form-group"><label>Phone <span style="color:red">*</span></label>
+                        <input type="text" name="phone" class="form-control" value="<?= e($row['phone']??'') ?>" required></div>
                     <button type="submit" class="btn btn-primary">💾 Save Changes</button>
                 </form>
                 <hr class="divider">

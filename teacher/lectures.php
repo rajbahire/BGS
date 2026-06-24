@@ -179,9 +179,6 @@ renderHead('My Lectures');
                             <option value="<?= $s['id'] ?>"><?= e($s['subject_name'].' ('.$s['subject_code'].')') ?></option>
                             <?php endforeach; ?>
                         </select>
-                        <?php if($teacher['class_label']): ?>
-                        <div class="text-xs text-muted" style="margin-top:3px"><?= e($teacher['class_label']) ?></div>
-                        <?php endif; ?>
                     </div>
 
                     <div class="form-group">

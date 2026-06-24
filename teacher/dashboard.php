@@ -35,10 +35,10 @@ renderHead('Teacher Dashboard');
     </div>
 
     <div class="stats-grid">
-        <div class="stat-card"><div class="stat-icon blue">🧾</div><div><div class="stat-label">Total Bills</div><div class="stat-value"><?= $totalBills ?></div></div></div>
         <div class="stat-card"><div class="stat-icon amber">⏳</div><div><div class="stat-label">Pending</div><div class="stat-value"><?= $pendingBills ?></div></div></div>
         <div class="stat-card"><div class="stat-icon green">✅</div><div><div class="stat-label">Approved</div><div class="stat-value"><?= $approvedBills ?></div></div></div>
         <div class="stat-card"><div class="stat-icon red">❌</div><div><div class="stat-label">Rejected</div><div class="stat-value"><?= $rejectedBills ?></div></div></div>
+        <div class="stat-card"><div class="stat-icon blue">🧾</div><div><div class="stat-label">Total Bills</div><div class="stat-value"><?= $totalBills ?></div></div></div>
         <div class="stat-card"><div class="stat-icon purple">📅</div><div><div class="stat-label">Hrs This Month</div><div class="stat-value"><?= number_format($lecThisMonth,1) ?></div></div></div>
         <div class="stat-card"><div class="stat-icon green">💰</div><div><div class="stat-label">Total Earned</div><div class="stat-value sm"><?= formatINR($totalEarned) ?></div></div></div>
     </div>
