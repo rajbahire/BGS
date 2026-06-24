@@ -79,6 +79,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
+    if ($action === 'delete') {
+        $id = (int)$_POST['id'];
+        $s  = $pdo->prepare("SELECT name FROM users WHERE id=? AND role='hod'");
+        $s->execute([$id]); $row = $s->fetch();
+        if ($row) {
+            $pdo->prepare("DELETE FROM users WHERE id=? AND role='hod'")->execute([$id]);
+            logActivity($pdo,$user['id'],'delete_hod',"Admin deleted HOD: {$row['name']}");
+            setFlash('success', "HOD \"{$row['name']}\" deleted permanently.");
+        }
+    }
+
     if ($action === 'activate') {
         $id = (int)$_POST['id'];
         $s  = $pdo->prepare("SELECT name FROM users WHERE id=? AND role='hod'");
@@ -159,8 +170,8 @@ renderHead('Manage HODs');
                                             onclick="return confirmAction('Reset HOD password to hod@1234?')">🔑</button>
                                 </form>
                                 <?php if ($h['is_active']): ?>
-                                <form method="POST" style="margin:0" onsubmit="return confirmAction('Deactivate this HOD? They will lose login access.')">
-                                    <input type="hidden" name="action" value="deactivate">
+                                <form method="POST" style="margin:0" onsubmit="return confirmAction('Delete this HOD permanently? This cannot be undone.')">
+                                    <input type="hidden" name="action" value="delete">
                                     <input type="hidden" name="id" value="<?= $h['id'] ?>">
                                     <button type="submit" class="btn btn-delete btn-sm">🗑 Delete</button>
                                 </form>

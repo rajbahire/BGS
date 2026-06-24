@@ -37,21 +37,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($action === 'edit') {
         $id     = (int)$_POST['id'];
         $label  = trim($_POST['label'] ?? '');
+        $year   = (int)$_POST['year'];
+        $sem    = (int)$_POST['semester'];
         $active = (int)$_POST['is_active'];
-        if ($id && $label) {
+        if ($id && $label && $year && $sem) {
             // Verify class belongs to this HOD's department
             $check = $pdo->prepare("SELECT id FROM classes WHERE id=? AND department_id=?");
             $check->execute([$id, $deptId]);
             if ($check->fetch()) {
-                $pdo->prepare("UPDATE classes SET label=?, is_active=? WHERE id=? AND department_id=?")
-                    ->execute([$label, $active, $id, $deptId]);
-                logActivity($pdo, $user['id'], 'edit_class', "HOD updated class ID $id: $label");
-                setFlash('success', 'Class updated successfully.');
+                try {
+                    $pdo->prepare("UPDATE classes SET label=?, year=?, semester=?, is_active=? WHERE id=? AND department_id=?")
+                        ->execute([$label, $year, $sem, $active, $id, $deptId]);
+                    logActivity($pdo, $user['id'], 'edit_class', "HOD updated class ID $id: $label");
+                    setFlash('success', 'Class updated successfully.');
+                } catch (PDOException $e) {
+                    setFlash('error', 'A class with that year/semester already exists in your department.');
+                }
             } else {
                 setFlash('error', 'Access denied.');
             }
         } else {
-            setFlash('error', 'Label is required.');
+            setFlash('error', 'All fields are required.');
         }
     }
 
@@ -160,12 +166,7 @@ renderHead('HOD — Classes');
                     <tr>
                         <td class="text-muted"><?= $i + 1 ?></td>
                         <td class="fw-500"><?= e($c['label']) ?></td>
-                        <td>
-                            <?php
-                            $yLabels = [1=>'FY (1st)',2=>'SY (2nd)',3=>'TY (3rd)',4=>'LY (4th)'];
-                            echo $yLabels[$c['year']] ?? $c['year'];
-                            ?>
-                        </td>
+                        <td><?= (int)$c['year'] ?></td>
                         <td>Sem <?= (int)$c['semester'] ?></td>
                         <td>
                             <span class="badge badge-draft"><?= (int)$c['subject_count'] ?> subjects</span>
@@ -249,18 +250,26 @@ renderHead('HOD — Classes');
                     </div>
 
                     <?php else: ?>
-                    <!-- Show year/sem as read-only when editing -->
+                    <!-- Year select (editable) -->
                     <div class="form-group">
-                        <label>Year</label>
-                        <input type="text" class="form-control" disabled
-                               value="<?= [1=>'FY (1st)',2=>'SY (2nd)',3=>'TY (3rd)',4=>'LY (4th)'][$editRow['year']] ?? $editRow['year'] ?>"
-                               style="background:var(--bg);color:var(--light)">
+                        <label>Year <span style="color:red">*</span></label>
+                        <select name="year" id="sel-year-edit" class="form-control" required
+                                onchange="autoLabel()">
+                            <option value="1" <?= $editRow['year']==1?'selected':'' ?>>1st Year (FY)</option>
+                            <option value="2" <?= $editRow['year']==2?'selected':'' ?>>2nd Year (SY)</option>
+                            <option value="3" <?= $editRow['year']==3?'selected':'' ?>>3rd Year (TY)</option>
+                            <option value="4" <?= $editRow['year']==4?'selected':'' ?>>4th Year (LY)</option>
+                        </select>
                     </div>
+                    <!-- Semester select (editable) -->
                     <div class="form-group">
-                        <label>Semester</label>
-                        <input type="text" class="form-control" disabled
-                               value="Semester <?= (int)$editRow['semester'] ?>"
-                               style="background:var(--bg);color:var(--light)">
+                        <label>Semester <span style="color:red">*</span></label>
+                        <select name="semester" id="sel-sem-edit" class="form-control" required
+                                onchange="autoLabel()">
+                            <?php for ($s = 1; $s <= 8; $s++): ?>
+                            <option value="<?= $s ?>" <?= $editRow['semester']==$s?'selected':'' ?>>Semester <?= $s ?></option>
+                            <?php endfor; ?>
+                        </select>
                     </div>
                     <?php endif; ?>
 
@@ -339,8 +348,8 @@ function filterSemesters() {
 }
 
 function autoLabel() {
-    const year = document.getElementById('sel-year');
-    const sem  = document.getElementById('sel-sem');
+    const year = document.getElementById('sel-year') || document.getElementById('sel-year-edit');
+    const sem  = document.getElementById('sel-sem')  || document.getElementById('sel-sem-edit');
     const lbl  = document.getElementById('lbl-input');
     if (!year || !sem || !lbl) return;
     const yL = yLabels[year.value] || '';

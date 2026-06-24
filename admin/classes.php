@@ -33,10 +33,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($action === 'edit') {
         $id     = (int)$_POST['id'];
         $label  = trim($_POST['label'] ?? '');
+        $year   = (int)$_POST['year'];
+        $sem    = (int)$_POST['semester'];
         $active = (int)$_POST['is_active'];
-        if ($id && $label) {
-            $pdo->prepare("UPDATE classes SET label=?, is_active=? WHERE id=?")->execute([$label,$active,$id]);
-            setFlash('success', 'Class updated.');
+        if ($id && $label && $year && $sem) {
+            try {
+                $pdo->prepare("UPDATE classes SET label=?, year=?, semester=?, is_active=? WHERE id=?")
+                    ->execute([$label, $year, $sem, $active, $id]);
+                logActivity($pdo, $user['id'], 'edit_class', "Updated class: $label");
+                setFlash('success', 'Class updated.');
+            } catch (PDOException $e) {
+                setFlash('error', 'A class with that year/semester already exists for this department.');
+            }
+        } else {
+            setFlash('error', 'All fields are required.');
         }
     }
 
@@ -208,6 +218,26 @@ renderHead('Classes');
                         </select>
                     </div>
 
+                    <?php else: ?>
+                    <div class="form-group">
+                        <label>Year <span style="color:red">*</span></label>
+                        <select name="year" id="sel-year-edit" class="form-control" required
+                                onchange="autoLabel()">
+                            <option value="1" <?= $editRow['year']==1?'selected':'' ?>>1st Year (FY)</option>
+                            <option value="2" <?= $editRow['year']==2?'selected':'' ?>>2nd Year (SY)</option>
+                            <option value="3" <?= $editRow['year']==3?'selected':'' ?>>3rd Year (TY)</option>
+                            <option value="4" <?= $editRow['year']==4?'selected':'' ?>>4th Year (LY)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Semester <span style="color:red">*</span></label>
+                        <select name="semester" id="sel-sem-edit" class="form-control" required
+                                onchange="autoLabel()">
+                            <?php for ($s = 1; $s <= 8; $s++): ?>
+                            <option value="<?= $s ?>" <?= $editRow['semester']==$s?'selected':'' ?>>Semester <?= $s ?></option>
+                            <?php endfor; ?>
+                        </select>
+                    </div>
                     <?php endif; ?>
 
                     <div class="form-group">
@@ -245,6 +275,7 @@ renderHead('Classes');
 <script>
 const yearLabels = {1:'FY',2:'SY',3:'TY',4:'LY'};
 const takenMap   = <?= json_encode($takenMap) ?>; // {deptId: [[year,sem],...], ...}
+const editDeptShort = '<?= $editRow ? e($pdo->query("SELECT short_name FROM departments WHERE id={$editRow['department_id']} LIMIT 1")->fetchColumn()) : '' ?>';
 
 function filterSemesters() {
     const dept  = document.getElementById('sel-dept');
@@ -291,11 +322,11 @@ function filterSemesters() {
 
 function autoLabel(){
     const dept = document.getElementById('sel-dept');
-    const year = document.getElementById('sel-year');
-    const sem  = document.getElementById('sel-sem');
+    const year = document.getElementById('sel-year') || document.getElementById('sel-year-edit');
+    const sem  = document.getElementById('sel-sem')  || document.getElementById('sel-sem-edit');
     const lbl  = document.getElementById('label-input');
-    if(!dept||!year||!sem||!lbl) return;
-    const short = dept.selectedOptions[0]?.dataset.short || '';
+    if(!year||!sem||!lbl) return;
+    const short = dept ? (dept.selectedOptions[0]?.dataset.short || '') : editDeptShort;
     const yLbl  = yearLabels[year.value] || '';
     if(short && yLbl && sem.value){
         lbl.value = yLbl+' '+short+' Sem '+sem.value;
