@@ -16,6 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $type   = $_POST['teacher_type']  ?? 'regular';
         $mode   = $_POST['teacher_mode']  ?? 'theory';
         $subj   = (int)$_POST['subject_id'];
+        $subj2  = (int)($_POST['subject_id_2'] ?? 0);
         $rateT  = (float)$_POST['rate_theory'];
         $rateP  = (float)$_POST['rate_practical'];
         $rateO  = (float)$_POST['rate_other'];
@@ -26,8 +27,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $dup = $pdo->prepare("SELECT id FROM users WHERE email=?"); $dup->execute([$email]);
             if ($dup->fetch()) { setFlash('error','Email already exists.'); }
             else {
-                $pdo->prepare("INSERT INTO users (name,email,password,role,department_id,teacher_type,teacher_mode,subject_id,rate_theory,rate_practical,rate_other,appointment_order_no,phone) VALUES (?,?,?,'teacher',?,?,?,?,?,?,?,?,?)")
-                    ->execute([$name,$email,password_hash($pass,PASSWORD_DEFAULT),$deptId,$type,$mode,$subj?:null,$rateT,$rateP,$rateO,$appNo,$phone]);
+                $pdo->prepare("INSERT INTO users (name,email,password,role,department_id,teacher_type,teacher_mode,subject_id,subject_id_2,rate_theory,rate_practical,rate_other,appointment_order_no,phone) VALUES (?,?,?,'teacher',?,?,?,?,?,?,?,?,?,?)")
+                    ->execute([$name,$email,password_hash($pass,PASSWORD_DEFAULT),$deptId,$type,$mode,$subj?:null,$subj2?:null,$rateT,$rateP,$rateO,$appNo,$phone]);
                 logActivity($pdo,$user['id'],'add_teacher',"Added teacher: $name");
                 setFlash('success',"Teacher \"$name\" added. Password: $pass");
             }
@@ -61,13 +62,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $type   = $_POST['teacher_type']  ?? null;
         $mode   = $_POST['teacher_mode']  ?? null;
         $subj   = (int)($_POST['subject_id'] ?? 0);
+        $subj2  = (int)($_POST['subject_id_2'] ?? 0);
         $rateT  = (float)($_POST['rate_theory']     ?? 0);
         $rateP  = (float)($_POST['rate_practical']   ?? 0);
         $rateO  = (float)($_POST['rate_other']       ?? 0);
         $rateH  = (float)($_POST['rate_per_hour']    ?? 0);
         $appNo  = trim($_POST['appointment_order_no']?? '');
-        $pdo->prepare("UPDATE users SET name=?,phone=?,is_active=?,teacher_type=?,teacher_mode=?,subject_id=?,rate_theory=?,rate_practical=?,rate_other=?,rate_per_hour=?,appointment_order_no=? WHERE id=? AND department_id=?")
-            ->execute([$name,$phone,$active,$type?:null,$mode?:null,$subj?:null,$rateT,$rateP,$rateO,$rateH,$appNo,$id,$deptId]);
+        $pdo->prepare("UPDATE users SET name=?,phone=?,is_active=?,teacher_type=?,teacher_mode=?,subject_id=?,subject_id_2=?,rate_theory=?,rate_practical=?,rate_other=?,rate_per_hour=?,appointment_order_no=? WHERE id=? AND department_id=?")
+            ->execute([$name,$phone,$active,$type?:null,$mode?:null,$subj?:null,$subj2?:null,$rateT,$rateP,$rateO,$rateH,$appNo,$id,$deptId]);
         setFlash('success','User updated.');
     }
 
@@ -140,8 +142,12 @@ if ($editId) { $s=$pdo->prepare("SELECT * FROM users WHERE id=? AND department_i
 $activeTab = $_GET['tab'] ?? 'teachers';
 
 $teachers = $pdo->prepare(
-    "SELECT u.*, s.subject_name, s.subject_code FROM users u
-     LEFT JOIN subjects s ON s.id=u.subject_id
+    "SELECT u.*,
+            s1.subject_name, s1.subject_code, s1.mode AS subject_mode,
+            s2.subject_name AS subject_name_2, s2.subject_code AS subject_code_2
+     FROM users u
+     LEFT JOIN subjects s1 ON s1.id=u.subject_id
+     LEFT JOIN subjects s2 ON s2.id=u.subject_id_2
      WHERE u.role='teacher' AND u.department_id=? ORDER BY u.name"
 ); $teachers->execute([$deptId]); $teachers=$teachers->fetchAll();
 
@@ -193,7 +199,12 @@ renderHead('Manage Users');
                             <div class="text-xs text-muted"><?= e($t['email']) ?></div>
                         </td>
                         <td><?= teacherTypeBadge($t['teacher_type']??'regular') ?></td>
-                        <td class="text-sm"><?= $t['subject_name'] ? e($t['subject_name']).'<br><span class="badge badge-expert" style="font-size:.66rem">'.e($t['subject_code']).'</span>' : '—' ?></td>
+                        <td class="text-sm">
+                            <?php if($t['subject_name']): ?>
+                                <?= e($t['subject_name']) ?> <span class="badge badge-expert" style="font-size:.66rem"><?= e($t['subject_code']) ?></span>
+                                <?php if($t['subject_name_2']): ?><br><?= e($t['subject_name_2']) ?> <span class="badge badge-draft" style="font-size:.66rem"><?= e($t['subject_code_2']) ?></span><?php endif; ?>
+                            <?php else: ?>—<?php endif; ?>
+                        </td>
                         <td class="text-sm"><?= formatINR($t['rate_theory']) ?> / <?= formatINR($t['rate_practical']) ?></td>
                         <td><?= $t['is_active']?'<span class="badge badge-approved">Active</span>':'<span class="badge badge-rejected">Inactive</span>' ?></td>
                         <td>
@@ -236,20 +247,15 @@ renderHead('Manage Users');
                         </select>
                     </div>
                     <div class="form-group"><label>Mode <span style="color:red">*</span></label>
-                        <select name="teacher_mode" class="form-control" required>
+                        <select name="teacher_mode" id="sel-mode" class="form-control" required onchange="updateSubjectFields()">
                             <option value="">— Select Mode —</option>
                             <option value="theory"    <?= ($editRow['teacher_mode']??'')==='theory'   ?'selected':'' ?>>Theory</option>
                             <option value="practical" <?= ($editRow['teacher_mode']??'')==='practical'?'selected':'' ?>>Practical</option>
-                            <option value="both"      <?= ($editRow['teacher_mode']??'')==='both'     ?'selected':'' ?>>Theory & Practical</option>
+                            <option value="both"      <?= ($editRow['teacher_mode']??'')==='both'     ?'selected':'' ?>>Theory &amp; Practical</option>
                         </select>
                     </div>
-                    <div class="form-group"><label>Assigned Subject</label>
-                        <select name="subject_id" class="form-control">
-                            <option value="">— Select Subject —</option>
-                            <?php foreach($subjects as $s): ?>
-                            <option value="<?= $s['id'] ?>" <?= ($editRow['subject_id']??0)==$s['id']?'selected':'' ?>><?= e($s['subject_name'].' ('.$s['subject_code'].')') ?></option>
-                            <?php endforeach; ?>
-                        </select>
+                    <div id="subject-fields">
+                        <!-- dynamically rendered by updateSubjectFields() -->
                     </div>
                     <div class="form-group"><label>Appointment Order No.</label><input type="text" name="appointment_order_no" class="form-control" value="<?= e($editRow['appointment_order_no']??'') ?>"></div>
                     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
@@ -334,3 +340,65 @@ renderHead('Manage Users');
 </div>
 </div>
 <?php renderFooter(); ?>
+<script>
+// All subjects for this dept, keyed by id, with mode info
+const allSubjects = <?= json_encode(array_values(array_map(fn($s) => [
+    'id'    => (int)$s['id'],
+    'label' => $s['subject_name'].' ('.$s['subject_code'].')',
+    'mode'  => $s['mode'],        // 'theory' | 'practical' | 'theory & practical'
+], $subjects))) ?>;
+
+// Current values (for edit mode pre-selection)
+const editSubj1 = <?= (int)($editRow['subject_id']   ?? 0) ?>;
+const editSubj2 = <?= (int)($editRow['subject_id_2'] ?? 0) ?>;
+
+function buildSelect(name, filterFn, selectedId, labelText) {
+    const wrap = document.createElement('div');
+    wrap.className = 'form-group';
+    const lbl = document.createElement('label');
+    lbl.innerHTML = labelText + ' <span style="color:red">*</span>';
+    const sel = document.createElement('select');
+    sel.name = name;
+    sel.className = 'form-control';
+    sel.required = true;
+    const blank = document.createElement('option');
+    blank.value = '';
+    blank.textContent = '— Select Subject —';
+    sel.appendChild(blank);
+    allSubjects.filter(filterFn).forEach(s => {
+        const o = document.createElement('option');
+        o.value = s.id;
+        o.textContent = s.label;
+        if (s.id === selectedId) o.selected = true;
+        sel.appendChild(o);
+    });
+    wrap.appendChild(lbl);
+    wrap.appendChild(sel);
+    return wrap;
+}
+
+function updateSubjectFields() {
+    const container = document.getElementById('subject-fields');
+    if (!container) return;
+    const mode = document.getElementById('sel-mode')?.value;
+    container.innerHTML = '';
+
+    if (!mode) return;
+
+    // Filter helpers
+    const theoryFilter    = s => s.mode === 'theory' || s.mode === 'theory & practical';
+    const practicalFilter = s => s.mode === 'practical' || s.mode === 'theory & practical';
+
+    if (mode === 'theory') {
+        container.appendChild(buildSelect('subject_id', theoryFilter, editSubj1, 'Theory Subject'));
+    } else if (mode === 'practical') {
+        container.appendChild(buildSelect('subject_id', practicalFilter, editSubj1, 'Practical Subject'));
+    } else if (mode === 'both') {
+        container.appendChild(buildSelect('subject_id',   theoryFilter,    editSubj1, 'Theory Subject'));
+        container.appendChild(buildSelect('subject_id_2', practicalFilter, editSubj2, 'Practical Subject'));
+    }
+}
+
+// Run on page load (edit mode pre-fill)
+document.addEventListener('DOMContentLoaded', updateSubjectFields);
+</script>

@@ -71,7 +71,8 @@ CREATE TABLE IF NOT EXISTS users (
     -- Teacher-specific fields
     teacher_type          ENUM('regular','expert','sectional_expert','adjunct') DEFAULT NULL,
     teacher_mode          ENUM('theory','practical','theory & practical') DEFAULT NULL,
-    subject_id            INT UNSIGNED   DEFAULT NULL,  -- assigned subject
+    subject_id            INT UNSIGNED   DEFAULT NULL,  -- assigned theory subject
+    subject_id_2          INT UNSIGNED   DEFAULT NULL,  -- assigned practical subject (for Theory & Practical mode)
     appointment_order_no  VARCHAR(100)   DEFAULT NULL,
     rate_theory           DECIMAL(8,2)   DEFAULT 0.00,  -- rate per theory hour
     rate_practical        DECIMAL(8,2)   DEFAULT 0.00,  -- rate per practical hour
@@ -102,6 +103,7 @@ CREATE TABLE IF NOT EXISTS users (
 
     FOREIGN KEY (department_id) REFERENCES departments(id) ON DELETE SET NULL,
     FOREIGN KEY (subject_id)    REFERENCES subjects(id)    ON DELETE SET NULL,
+    FOREIGN KEY (subject_id_2)  REFERENCES subjects(id)    ON DELETE SET NULL,
     FOREIGN KEY (class_id)      REFERENCES classes(id)     ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
