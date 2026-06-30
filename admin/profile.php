@@ -59,8 +59,9 @@ renderHead('Profile');
     <div class="page-header"><h1>My Profile</h1><p>Manage your admin account</p></div>
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;align-items:start">
+    <div style="display:flex;flex-direction:column;gap:1.5rem">
         <div class="card">
-            <div class="card-header"><h3>👤 Personal Information</h3></div>
+            <div class="card-header"><h3><span><?= svgIcon('profile') ?></span> Personal Information</h3></div>
             <div class="card-body">
                 <div style="display:flex;align-items:center;gap:16px;padding:1rem;background:var(--bg);border-radius:var(--radius);margin-bottom:1.2rem">
                     <?php if($row['profile_photo']): ?>
@@ -84,20 +85,25 @@ renderHead('Profile');
                         <input type="email" class="form-control" value="<?= e($row['email']) ?>" disabled></div>
                     <div class="form-group"><label>Phone <span style="color:red">*</span></label>
                         <input type="text" name="phone" class="form-control" value="<?= e($row['phone']??'') ?>" required></div>
-                    <button type="submit" class="btn btn-primary">💾 Save Changes</button>
-                </form>
-                <hr class="divider">
-                <!-- Photo upload -->
-                <form method="POST" enctype="multipart/form-data">
-                    <input type="hidden" name="action" value="upload_photo">
-                    <div class="form-group"><label>Update Profile Photo</label><input type="file" name="photo" class="form-control" accept=".jpg,.jpeg,.png"></div>
-                    <button type="submit" class="btn btn-primary">📷 Upload Photo</button>
+                    <button type="submit" class="btn btn-primary"><?= svgIcon('save') ?> Save Changes</button>
                 </form>
             </div>
         </div>
 
         <div class="card">
-            <div class="card-header"><h3>🔒 Change Password</h3></div>
+            <div class="card-header"><h3><?= svgIcon('upload-photo') ?> Update Profile Photo</h3></div>
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    <input type="hidden" name="action" value="upload_photo">
+                    <div class="form-group"><label>Select Photo (JPG, JPEG, PNG)</label><input type="file" name="photo" class="form-control" accept=".jpg,.jpeg,.png"></div>
+                    <button type="submit" class="btn btn-primary"><?= svgIcon('upload-photo') ?> Upload Photo</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+        <div class="card">
+            <div class="card-header"><h3><?= svgIcon('key') ?> Change Password</h3></div>
             <div class="card-body">
                 <form method="POST">
                     <input type="hidden" name="action" value="password">
@@ -107,7 +113,7 @@ renderHead('Profile');
                         <input type="password" name="new_password" class="form-control" required placeholder="Min. 6 characters"></div>
                     <div class="form-group"><label>Confirm New Password <span style="color:red">*</span></label>
                         <input type="password" name="confirm_password" class="form-control" required></div>
-                    <button type="submit" class="btn btn-primary">🔑 Change Password</button>
+                    <button type="submit" class="btn btn-primary"><?= svgIcon('reset') ?> Change Password</button>
                 </form>
             </div>
         </div>

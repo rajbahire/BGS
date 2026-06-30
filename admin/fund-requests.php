@@ -44,9 +44,9 @@ renderHead('Fund Requests');
 
     <div class="d-flex gap-8 flex-wrap mb-2">
         <a href="fund-requests.php" class="btn <?= !$filter?'btn-primary':'btn-outline' ?> btn-sm">All</a>
-        <a href="?status=pending"  class="btn <?= $filter==='pending' ?'btn-primary':'btn-outline' ?> btn-sm">⏳ Pending</a>
-        <a href="?status=approved" class="btn <?= $filter==='approved'?'btn-primary':'btn-outline' ?> btn-sm">✅ Approved</a>
-        <a href="?status=rejected" class="btn <?= $filter==='rejected'?'btn-primary':'btn-outline' ?> btn-sm">❌ Rejected</a>
+        <a href="?status=pending"  class="btn <?= $filter==='pending' ?'btn-primary':'btn-outline' ?> btn-sm"><?= svgIcon('pending') ?> Pending</a>
+        <a href="?status=approved" class="btn <?= $filter==='approved'?'btn-primary':'btn-outline' ?> btn-sm"><?= svgIcon('approved') ?> Approved</a>
+        <a href="?status=rejected" class="btn <?= $filter==='rejected'?'btn-primary':'btn-outline' ?> btn-sm"><?= svgIcon('rejected') ?> Rejected</a>
     </div>
 
     <div class="card">
@@ -67,9 +67,9 @@ renderHead('Fund Requests');
                     <td>
                         <?php if ($r['status'] === 'pending'): ?>
                         <button class="btn btn-success btn-sm"
-                                onclick="openModal('modal-fr-<?= $r['id'] ?>-approve')">✅</button>
+                                onclick="openModal('modal-fr-<?= $r['id'] ?>-approve')"><?= svgIcon('check') ?></button>
                         <button class="btn btn-danger btn-sm"
-                                onclick="openModal('modal-fr-<?= $r['id'] ?>-reject')">❌</button>
+                                onclick="openModal('modal-fr-<?= $r['id'] ?>-reject')"><?= svgIcon('close') ?></button>
                         <?php else: ?>
                         <span class="text-muted text-xs"><?= e($r['admin_note'] ?? '—') ?></span>
                         <?php endif; ?>
@@ -82,8 +82,8 @@ renderHead('Fund Requests');
                         <div class="modal-backdrop" id="modal-fr-<?= $r['id'] ?>-approve">
                             <div class="modal">
                                 <div class="modal-header">
-                                    <h3>✅ Approve Fund Request</h3>
-                                    <button class="modal-close" onclick="closeModal('modal-fr-<?= $r['id'] ?>-approve')">✕</button>
+                                    <h3><?= svgIcon('check') ?> Approve Fund Request</h3>
+                                    <button class="modal-close" onclick="closeModal('modal-fr-<?= $r['id'] ?>-approve')"><?= svgIcon('close') ?></button>
                                 </div>
                                 <form method="POST">
                                     <input type="hidden" name="id" value="<?= $r['id'] ?>">
@@ -109,8 +109,8 @@ renderHead('Fund Requests');
                         <div class="modal-backdrop" id="modal-fr-<?= $r['id'] ?>-reject">
                             <div class="modal">
                                 <div class="modal-header">
-                                    <h3>❌ Reject Fund Request</h3>
-                                    <button class="modal-close" onclick="closeModal('modal-fr-<?= $r['id'] ?>-reject')">✕</button>
+                                    <h3><?= svgIcon('close') ?> Reject Fund Request</h3>
+                                    <button class="modal-close" onclick="closeModal('modal-fr-<?= $r['id'] ?>-reject')"><?= svgIcon('close') ?></button>
                                 </div>
                                 <form method="POST">
                                     <input type="hidden" name="id" value="<?= $r['id'] ?>">
@@ -136,7 +136,7 @@ renderHead('Fund Requests');
             </table>
         </div>
         <?php else: ?>
-        <div class="empty-state"><div class="icon">💰</div><h3>No fund requests found</h3></div>
+        <div class="empty-state"><div class="icon"><?= svgIcon('fund-requests') ?></div><h3>No fund requests found</h3></div>
         <?php endif; ?>
     </div>
 </div>

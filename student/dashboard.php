@@ -28,22 +28,22 @@ renderHead('Student Dashboard');
 <div class="page-body">
     <?= getFlash() ?>
     <div class="page-header">
-        <h1>Welcome, <?= e(explode(' ',$user['name'])[0]) ?> 👋</h1>
+        <h1>Welcome, <?= e(explode(' ',$user['name'])[0]) ?></h1>
         <p>Earn &amp; Learn Scheme — <?= e($student['class_label']??'') ?> &nbsp;|&nbsp; <?= e($student['dept_name']??'') ?></p>
     </div>
 
     <div class="stats-grid">
-        <div class="stat-card"><div class="stat-icon blue">📋</div><div><div class="stat-label">Total Bills</div><div class="stat-value"><?= $totalBills ?></div></div></div>
-        <div class="stat-card"><div class="stat-icon amber">⏳</div><div><div class="stat-label">Pending</div><div class="stat-value"><?= $pendingBills ?></div></div></div>
-        <div class="stat-card"><div class="stat-icon green">✅</div><div><div class="stat-label">Approved</div><div class="stat-value"><?= $approvedBills ?></div></div></div>
-        <div class="stat-card"><div class="stat-icon purple">🕐</div><div><div class="stat-label">Hrs This Month</div><div class="stat-value"><?= number_format($hrsThisMonth,1) ?></div></div></div>
-        <div class="stat-card"><div class="stat-icon green">💰</div><div><div class="stat-label">Total Earned</div><div class="stat-value sm"><?= formatINR($totalEarned) ?></div></div></div>
+        <div class="stat-card"><div class="stat-icon blue"><?= svgIcon('all-bills') ?></div><div><div class="stat-label">Total Bills</div><div class="stat-value"><?= $totalBills ?></div></div></div>
+        <div class="stat-card"><div class="stat-icon amber"><?= svgIcon('pending') ?></div><div><div class="stat-label">Pending</div><div class="stat-value"><?= $pendingBills ?></div></div></div>
+        <div class="stat-card"><div class="stat-icon green"><?= svgIcon('approved') ?></div><div><div class="stat-label">Approved</div><div class="stat-value"><?= $approvedBills ?></div></div></div>
+        <div class="stat-card"><div class="stat-icon purple"><?= svgIcon('pending') ?></div><div><div class="stat-label">Hrs This Month</div><div class="stat-value"><?= number_format($hrsThisMonth,1) ?></div></div></div>
+        <div class="stat-card"><div class="stat-icon green"><?= svgIcon('fund-requests') ?></div><div><div class="stat-label">Total Earned</div><div class="stat-value sm"><?= formatINR($totalEarned) ?></div></div></div>
     </div>
 
     <div class="d-flex gap-10 flex-wrap mb-2">
-        <a href="my-bills.php"      class="btn btn-primary">📋 My Bills</a>
-        <a href="add-work.php"      class="btn btn-outline">➕ Add Work Hours</a>
-        <a href="generate-bill.php" class="btn btn-outline">🧾 Generate Bill</a>
+        <a href="my-bills.php"      class="btn btn-primary"><?= svgIcon('list') ?> My Bills</a>
+        <a href="add-work.php"      class="btn btn-outline"><?= svgIcon('add') ?> Add Work Hours</a>
+        <a href="generate-bill.php" class="btn btn-outline"><?= svgIcon('receipt') ?> Generate Bill</a>
     </div>
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem">
@@ -65,7 +65,7 @@ renderHead('Student Dashboard');
                     </tbody>
                 </table>
             </div>
-            <?php else: ?><div class="empty-state"><div class="icon">📄</div><h3>No bills yet</h3></div><?php endif; ?>
+            <?php else: ?><div class="empty-state"><div class="icon"><?= svgIcon('document') ?></div><h3>No bills yet</h3></div><?php endif; ?>
         </div>
 
         <div class="card">
@@ -85,7 +85,7 @@ renderHead('Student Dashboard');
                     </tbody>
                 </table>
             </div>
-            <?php else: ?><div class="empty-state"><div class="icon">🕐</div><h3>No work logged yet</h3></div><?php endif; ?>
+            <?php else: ?><div class="empty-state"><div class="icon"><?= svgIcon('pending') ?></div><h3>No work logged yet</h3></div><?php endif; ?>
         </div>
     </div>
 </div>

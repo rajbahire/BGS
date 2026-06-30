@@ -154,7 +154,7 @@ renderHead('HOD — Subjects');
 <div class="page-body">
     <?= getFlash() ?>
     <div class="page-header">
-        <h1>📖 Subjects</h1>
+        <h1>Subjects</h1>
         <p>Manage subjects for <strong><?= e($deptName) ?></strong> classes</p>
     </div>
 
@@ -178,7 +178,7 @@ renderHead('HOD — Subjects');
                             </select>
                         </div>
                         <?php if ($filterClass): ?>
-                        <a href="subjects.php" class="btn btn-outline btn-sm">✕ Clear</a>
+                        <a href="subjects.php" class="btn btn-outline btn-sm"><?= svgIcon('close') ?> Clear</a>
                         <?php endif; ?>
                     </form>
                 </div>
@@ -222,13 +222,13 @@ renderHead('HOD — Subjects');
                             <td>
                                 <div class="d-flex gap-8">
                                     <a href="?edit=<?= $s['id'] ?><?= $filterClass ? "&class=$filterClass" : '' ?>"
-                                       class="btn btn-outline btn-sm">✏️ Edit</a>
+                                       class="btn btn-outline btn-sm"><?= svgIcon('edit') ?> Edit</a>
                                     <form method="POST" style="margin:0"
                                           onsubmit="return confirmAction('Delete / deactivate this subject?')">
                                         <input type="hidden" name="action" value="delete">
                                         <input type="hidden" name="id" value="<?= $s['id'] ?>">
                                         <input type="hidden" name="filter_class" value="<?= $filterClass ?>">
-                                        <button type="submit" class="btn btn-sm btn-delete">🗑 Delete</button>
+                                        <button type="submit" class="btn btn-sm btn-delete"><?= svgIcon('delete') ?> Delete</button>
                                     </form>
                                 </div>
                             </td>
@@ -239,7 +239,7 @@ renderHead('HOD — Subjects');
                 </div>
                 <?php else: ?>
                 <div class="empty-state">
-                    <div class="icon">📖</div>
+                    <div class="icon"><?= svgIcon('subjects') ?></div>
                     <h3>No subjects found</h3>
                     <p><?= $filterClass ? 'No subjects in this class.' : 'Add a subject using the form on the right.' ?></p>
                 </div>
@@ -250,7 +250,7 @@ renderHead('HOD — Subjects');
         <!-- Right: Add / Edit Form -->
         <div class="card" style="position:sticky;top:80px">
             <div class="card-header">
-                <h3><?= $editRow ? '✏️ Edit Subject' : '➕ Add Subject' ?></h3>
+                <h3><?= $editRow ? svgIcon('edit') . ' Edit Subject' : svgIcon('add') . ' Add Subject' ?></h3>
                 <?php if ($editRow): ?>
                 <a href="subjects.php" class="btn btn-outline btn-sm">Cancel</a>
                 <?php endif; ?>
@@ -269,7 +269,7 @@ renderHead('HOD — Subjects');
                         <label>Class <span style="color:red">*</span></label>
                         <?php if (empty($deptClasses)): ?>
                         <div class="alert alert-warning" style="font-size:.85rem;margin:0">
-                            ⚠️ No active classes found. <a href="classes.php">Add a class first.</a>
+                            <?= svgIcon('warning') ?> No active classes found. <a href="classes.php">Add a class first.</a>
                         </div>
                         <?php else: ?>
                         <select name="class_id" class="form-control" required>
@@ -328,7 +328,7 @@ renderHead('HOD — Subjects');
 
                     <button type="submit" class="btn btn-primary" style="width:100%"
                             <?= empty($deptClasses) && !$editRow ? 'disabled' : '' ?>>
-                        <?= $editRow ? '💾 Update Subject' : '➕ Add Subject' ?>
+                        <?= $editRow ? svgIcon('save') . ' Update Subject' : svgIcon('add') . ' Add Subject' ?>
                     </button>
                     <?php if ($editRow): ?>
                     <a href="subjects.php" class="btn btn-outline" style="width:100%;margin-top:8px;justify-content:center">Cancel</a>

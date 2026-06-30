@@ -101,7 +101,7 @@ renderHead('Review Bill');
 
             <!-- Teacher Info -->
             <div class="card" style="margin-bottom:1.5rem">
-                <div class="card-header"><h3>👨‍🏫 Teacher Info</h3></div>
+                <div class="card-header"><h3><?= svgIcon('teacher') ?> Teacher Info</h3></div>
                 <div class="card-body">
                     <div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem;font-size:.88rem">
                         <div><span class="text-muted">Name:</span> <strong><?= e($bill['tname']) ?></strong></div>
@@ -118,7 +118,7 @@ renderHead('Review Bill');
 
             <!-- Lecture Breakdown -->
             <div class="card">
-                <div class="card-header"><h3>📅 Lecture Breakdown</h3></div>
+                <div class="card-header"><h3><?= svgIcon('calendar') ?> Lecture Breakdown</h3></div>
                 <div class="table-wrap">
                     <table>
                         <thead><tr><th>#</th><th>Date</th><th>Subject</th><th>Theory Hrs</th><th>Practical Hrs</th><th>Other Hrs</th><th>Amount</th></tr></thead>
@@ -155,20 +155,20 @@ renderHead('Review Bill');
         <?php if($bill['status']==='pending'): ?>
         <div>
             <div class="card" style="margin-bottom:1rem;border-color:var(--approved-bdr)">
-                <div class="card-header" style="background:var(--approved-bg)"><h3 style="color:var(--approved)">✅ Approve Bill</h3></div>
+                <div class="card-header" style="background:var(--approved-bg)"><h3 style="color:var(--approved)"><?= svgIcon('check') ?> Approve Bill</h3></div>
                 <div class="card-body">
                     <p class="text-sm text-muted" style="margin-bottom:1rem">Approve this bill for <strong><?= formatINR($bill['total_amount']) ?></strong>.</p>
                     <form method="POST">
                         <input type="hidden" name="action" value="approve">
                         <button type="submit" class="btn btn-success" style="width:100%"
                                 onclick="return confirmAction('Approve this bill for <?= formatINR($bill['total_amount']) ?>?')">
-                            ✅ Approve Bill
+                            <?= svgIcon('check') ?> Approve Bill
                         </button>
                     </form>
                 </div>
             </div>
             <div class="card" style="border-color:var(--rejected-bdr)">
-                <div class="card-header" style="background:var(--rejected-bg)"><h3 style="color:var(--rejected)">❌ Reject Bill</h3></div>
+                <div class="card-header" style="background:var(--rejected-bg)"><h3 style="color:var(--rejected)"><?= svgIcon('close') ?> Reject Bill</h3></div>
                 <div class="card-body">
                     <form method="POST">
                         <input type="hidden" name="action" value="reject">
@@ -179,7 +179,7 @@ renderHead('Review Bill');
                         </div>
                         <button type="submit" class="btn btn-danger" style="width:100%"
                                 onclick="return confirmAction('Reject this bill?')">
-                            ❌ Reject Bill
+                            <?= svgIcon('close') ?> Reject Bill
                         </button>
                     </form>
                 </div>
@@ -188,14 +188,14 @@ renderHead('Review Bill');
         <?php else: ?>
         <div class="card">
             <div class="card-body" style="text-align:center;padding:2rem">
-                <div style="font-size:2.5rem;margin-bottom:.8rem"><?= $bill['status']==='approved'?'✅':'❌' ?></div>
+                <div style="font-size:2.5rem;margin-bottom:.8rem"><?= $bill['status']==='approved'?svgIcon('check'):svgIcon('close') ?></div>
                 <div class="fw-600"><?= ucfirst($bill['status']) ?></div>
                 <div class="text-muted text-sm">Reviewed <?= fmtDate($bill['reviewed_at'],'d M Y') ?></div>
                 <?php if($bill['rejection_reason']): ?>
                 <div class="alert alert-error" style="text-align:left;margin-top:1rem"><?= e($bill['rejection_reason']) ?></div>
                 <?php endif; ?>
                 <?php if($bill['status']==='approved'): ?>
-                <a href="../pdf/generate.php?id=<?= $billId ?>" class="btn btn-success" style="margin-top:1rem" target="_blank">⬇ Download PDF</a>
+                <a href="../pdf/generate.php?id=<?= $billId ?>" class="btn btn-success" style="margin-top:1rem" target="_blank"><?= svgIcon('download') ?> Download PDF</a>
                 <?php endif; ?>
             </div>
         </div>

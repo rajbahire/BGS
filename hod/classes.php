@@ -180,12 +180,12 @@ renderHead('HOD — Classes');
                         </td>
                         <td>
                             <div class="d-flex gap-8">
-                                <a href="?edit=<?= $c['id'] ?>" class="btn btn-outline btn-sm">✏️ Edit</a>
+                                <a href="?edit=<?= $c['id'] ?>" class="btn btn-outline btn-sm"><?= svgIcon('edit') ?> Edit</a>
                                 <form method="POST" style="margin:0"
                                       onsubmit="return confirmAction('<?= $c['subject_count'] > 0 ? 'This class has subjects and will be deactivated. Continue?' : 'Delete this class permanently?' ?>')">
                                     <input type="hidden" name="action" value="delete">
                                     <input type="hidden" name="id" value="<?= $c['id'] ?>">
-                                    <button type="submit" class="btn btn-sm btn-delete">🗑 <?= $c['subject_count'] > 0 ? 'Deactivate' : 'Delete' ?></button>
+                                    <button type="submit" class="btn btn-sm btn-delete"><?= svgIcon('delete') ?> <?= $c['subject_count'] > 0 ? 'Deactivate' : 'Delete' ?></button>
                                 </form>
                             </div>
                         </td>
@@ -196,7 +196,7 @@ renderHead('HOD — Classes');
             </div>
             <?php else: ?>
             <div class="empty-state">
-                <div class="icon">📚</div>
+                <div class="icon"><?= svgIcon('classes') ?></div>
                 <h3>No classes yet</h3>
                 <p>Add a class using the form on the right.</p>
             </div>
@@ -206,7 +206,7 @@ renderHead('HOD — Classes');
         <!-- Add / Edit Form -->
         <div class="card" style="position:sticky;top:80px">
             <div class="card-header">
-                <h3><?= $editRow ? '✏️ Edit Class' : '➕ Add Class' ?></h3>
+                <h3><?= $editRow ? svgIcon('edit') . ' Edit Class' : svgIcon('add') . ' Add Class' ?></h3>
                 <?php if ($editRow): ?>
                 <a href="classes.php" class="btn btn-outline btn-sm">Cancel</a>
                 <?php endif; ?>
@@ -300,7 +300,7 @@ renderHead('HOD — Classes');
                     <?php endif; ?>
 
                     <button type="submit" class="btn btn-primary" style="width:100%">
-                        <?= $editRow ? '💾 Update Class' : '➕ Add Class' ?>
+                        <?= $editRow ? svgIcon('save') . ' Update Class' : svgIcon('add') . ' Add Class' ?>
                     </button>
                     <?php if ($editRow): ?>
                     <a href="classes.php" class="btn btn-outline" style="width:100%;margin-top:8px;justify-content:center">Cancel</a>

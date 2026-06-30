@@ -47,6 +47,27 @@ html, body {
     min-height: 100vh;
 }
 
+.stat-icon svg.icon {
+    width: 26px;
+    height: 26px;
+    display: block;
+    flex-shrink: 0;
+}
+
+/* SVG icon base sizing */
+svg.icon {
+    display: block;
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+}
+
+/* Button icons */
+.btn svg.icon { width: 20px; height: 20px; }
+.btn-sm svg.icon { width: 18px; height: 18px; }
+.btn-lg svg.icon { width: 22px; height: 22px; }
+.btn-logout svg.icon { width: 20px; height: 20px; }
+
 /* =============================================
    NAVBAR
    ============================================= */
@@ -228,10 +249,23 @@ html, body {
     transition: all 0.15s;
 }
 
+/* SVG icons inside nav */
+.nav-icon svg.icon {
+    width: 22px;
+    height: 22px;
+    display: block;
+    flex-shrink: 0;
+}
+
+/* Color states */
+.nav-item        .nav-icon svg.icon { color: var(--muted); }
+.nav-item:hover  .nav-icon svg.icon { color: var(--text);  }
+.nav-item.active .nav-icon svg.icon { color: var(--primary); }
+
 .nav-item:hover { background: var(--bg); color: var(--text); }
 .nav-item.active { background: var(--primary-lt); color: var(--primary); font-weight: 600; }
 
-.nav-icon { font-size: 1rem; width: 20px; text-align: center; flex-shrink: 0; }
+.nav-icon { font-size: 1rem; width: 22px; text-align: center; flex-shrink: 0; }
 
 .nav-badge {
     margin-left: auto;
@@ -303,7 +337,9 @@ html, body {
     color: var(--text);
     letter-spacing: -0.02em;
     margin-bottom: 0.2rem;
+    display: inline-flex; align-items: center; gap: 8px;
 }
+.page-header h1 svg.icon { width: 26px; height: 26px; stroke-width: 2.5; }
 .page-header p { font-size: 0.84rem; color: var(--muted); }
 
 /* =============================================
@@ -380,7 +416,8 @@ html, body {
     justify-content: space-between;
 }
 
-.card-header h3 { font-size: 0.92rem; font-weight: 600; color: var(--text); }
+.card-header h3 { font-size: 0.92rem; font-weight: 600; color: var(--text); display: inline-flex; align-items: center; gap: 8px; }
+.card-header h3 svg.icon { width: 20px; height: 20px; stroke-width: 2.5; }
 .card-body { padding: 1.3rem; }
 
 /* =============================================
@@ -551,7 +588,7 @@ select.form-control {
     font-size: 0.84rem;
     margin-bottom: 1rem;
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     gap: 8px;
     line-height: 1.5;
 }
@@ -560,6 +597,7 @@ select.form-control {
 .alert-error   { background: var(--rejected-bg); border: 1px solid var(--rejected-bdr); color: #991B1B; border-left: 3px solid var(--rejected); }
 .alert-warning { background: var(--pending-bg);  border: 1px solid var(--pending-bdr);  color: #92400E; border-left: 3px solid var(--pending); }
 .alert-info    { background: var(--primary-lt);  border: 1px solid var(--primary-border); color: var(--primary); border-left: 3px solid var(--primary); }
+.alert svg.icon { width: 20px; height: 20px; flex-shrink: 0; }
 
 /* =============================================
    EMPTY STATE
@@ -570,7 +608,8 @@ select.form-control {
     color: var(--muted);
 }
 
-.empty-state .icon { font-size: 2.5rem; margin-bottom: 0.8rem; }
+.empty-state .icon { font-size: 2.5rem; margin-bottom: 0.8rem; display: flex; justify-content: center; align-items: center; }
+.empty-state .icon svg.icon { width: 48px; height: 48px; }
 .empty-state h3 { font-size: 0.95rem; color: var(--text); margin-bottom: 0.4rem; font-weight: 600; }
 .empty-state p  { font-size: 0.83rem; }
 
@@ -605,6 +644,7 @@ select.form-control {
     background: none; border: none; cursor: pointer;
     color: var(--muted); font-size: 1rem; padding: 3px; line-height: 1;
 }
+.pw-toggle svg.icon { width: 22px; height: 22px; }
 
 /* =============================================
    LOGIN PAGE

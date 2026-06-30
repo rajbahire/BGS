@@ -18,6 +18,7 @@ if (!empty($_SESSION['user_id'])) {
 }
 
 require_once __DIR__ . '/includes/db.php';
+require_once __DIR__ . '/includes/functions.php';
 
 $error = '';
 
@@ -89,7 +90,7 @@ $msg = $_GET['msg'] ?? '';
     <div class="navbar-brand">
         <img src="assets/images/logo.png" alt="GCEA Logo" class="navbar-logo"
              onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="navbar-logo-fallback" style="display:none">🎓</div>
+        <div class="navbar-logo-fallback" style="display:none"><?= svgIcon('dashboard') ?></div>
 
         <div class="navbar-titles">
             <span class="navbar-college-en">Government College of Engineering Aurangabad, Chhatrapati Sambhajinagar</span>
@@ -113,12 +114,12 @@ $msg = $_GET['msg'] ?? '';
 
         <!-- Session expired message -->
         <?php if ($msg === 'login_required'): ?>
-        <div class="alert alert-warning">⚠️ Your session expired. Please sign in again.</div>
+        <div class="alert alert-warning"><?= svgIcon('warning') ?> Your session expired. Please sign in again.</div>
         <?php endif; ?>
 
         <!-- Error -->
         <?php if ($error): ?>
-        <div class="alert alert-error">❌ <?= htmlspecialchars($error) ?></div>
+        <div class="alert alert-error"><?= svgIcon('close') ?> <?= htmlspecialchars($error) ?></div>
         <?php endif; ?>
 
         <!-- Login Form -->
@@ -152,7 +153,7 @@ $msg = $_GET['msg'] ?? '';
                     >
                     <button type="button" class="pw-toggle"
                             onclick="togglePw('password','pw-eye')">
-                        <span id="pw-eye">👁</span>
+                        <span id="pw-eye" data-on='<?= svgIcon('eye') ?>' data-off='<?= svgIcon('eye-off') ?>'><?= svgIcon('eye') ?></span>
                     </button>
                 </div>
             </div>

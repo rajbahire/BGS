@@ -162,25 +162,25 @@ renderHead('Manage HODs');
                         <td><?= $h['is_active'] ? '<span class="badge badge-approved">Active</span>' : '<span class="badge badge-rejected">Inactive</span>' ?></td>
                         <td>
                             <div class="d-flex gap-8" style="flex-wrap:wrap">
-                                <a href="?edit=<?= $h['id'] ?>" class="btn btn-outline btn-sm">✏️ Edit</a>
+                                <a href="?edit=<?= $h['id'] ?>" class="btn btn-outline btn-sm"><?= svgIcon('edit') ?> Edit</a>
                                 <form method="POST" style="margin:0">
                                     <input type="hidden" name="action" value="reset_password">
                                     <input type="hidden" name="id" value="<?= $h['id'] ?>">
                                     <button class="btn btn-outline btn-sm"
-                                            onclick="return confirmAction('Reset HOD password to hod@1234?')">🔑</button>
+                                            onclick="return confirmAction('Reset HOD password to hod@1234?')"><?= svgIcon('reset') ?></button>
                                 </form>
                                 <?php if ($h['is_active']): ?>
                                 <form method="POST" style="margin:0" onsubmit="return confirmAction('Delete this HOD permanently? This cannot be undone.')">
                                     <input type="hidden" name="action" value="delete">
                                     <input type="hidden" name="id" value="<?= $h['id'] ?>">
-                                    <button type="submit" class="btn btn-delete btn-sm">🗑 Delete</button>
+                                    <button type="submit" class="btn btn-delete btn-sm"><?= svgIcon('delete') ?> Delete</button>
                                 </form>
                                 <?php else: ?>
                                 <form method="POST" style="margin:0" onsubmit="return confirmAction('Reactivate this HOD?')">
                                     <input type="hidden" name="action" value="activate">
                                     <input type="hidden" name="id" value="<?= $h['id'] ?>">
                                     <button type="submit" class="btn btn-sm"
-                                            style="background:rgba(34,197,94,.1);color:#16A34A;border:1px solid rgba(34,197,94,.3)">✅ Reactivate</button>
+                                            style="background:rgba(34,197,94,.1);color:#16A34A;border:1px solid rgba(34,197,94,.3)"><?= svgIcon('check') ?> Reactivate</button>
                                 </form>
                                 <?php endif; ?>
                             </div>
@@ -191,13 +191,13 @@ renderHead('Manage HODs');
                 </table>
             </div>
             <?php else: ?>
-            <div class="empty-state"><div class="icon">👥</div><h3>No HODs added yet</h3></div>
+            <div class="empty-state"><div class="icon"><?= svgIcon('manage-hods') ?></div><h3>No HODs added yet</h3></div>
             <?php endif; ?>
         </div>
 
         <!-- Form -->
         <div class="card" style="position:sticky;top:80px">
-            <div class="card-header"><h3><?= $editRow ? '✏️ Edit HOD' : '➕ Add HOD' ?></h3></div>
+            <div class="card-header"><h3><?= $editRow ? svgIcon('edit') . ' Edit HOD' : svgIcon('add') . ' Add HOD' ?></h3></div>
             <div class="card-body">
                 <form method="POST">
                     <input type="hidden" name="action" value="<?= $editRow ? 'edit' : 'add' ?>">
@@ -265,7 +265,7 @@ renderHead('Manage HODs');
                     <?php endif; ?>
 
                     <button type="submit" class="btn btn-primary" style="width:100%">
-                        <?= $editRow ? '💾 Update HOD' : '➕ Add HOD' ?>
+                        <?= $editRow ? svgIcon('save') . ' Update HOD' : svgIcon('add') . ' Add HOD' ?>
                     </button>
                     <?php if ($editRow): ?>
                     <a href="manage-hods.php" class="btn btn-outline" style="width:100%;margin-top:8px;justify-content:center">Cancel</a>

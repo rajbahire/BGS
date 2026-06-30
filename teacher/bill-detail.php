@@ -34,23 +34,23 @@ renderHead('Bill Detail');
         </div>
         <div class="d-flex gap-8">
             <?php if($bill['status']==='approved'): ?>
-            <a href="../pdf/generate.php?id=<?= $billId ?>" class="btn btn-success" target="_blank">⬇ Download PDF</a>
+            <a href="../pdf/generate.php?id=<?= $billId ?>" class="btn btn-success" target="_blank"><?= svgIcon('download') ?> Download PDF</a>
             <?php endif; ?>
             <?php if($bill['status']==='rejected'): ?>
-            <a href="generate-bill.php" class="btn btn-primary">🔄 Generate New Bill</a>
+            <a href="generate-bill.php" class="btn btn-primary"><?= svgIcon('refresh') ?> Generate New Bill</a>
             <?php endif; ?>
             <a href="my-bills.php" class="btn btn-outline">← Back</a>
         </div>
     </div>
 
     <?php if($bill['status']==='rejected' && $bill['rejection_reason']): ?>
-    <div class="alert alert-error mb-2">❌ <strong>Rejected:</strong> <?= e($bill['rejection_reason']) ?></div>
+    <div class="alert alert-error mb-2"><?= svgIcon('close') ?> <strong>Rejected:</strong> <?= e($bill['rejection_reason']) ?></div>
     <?php endif; ?>
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem">
         <!-- Bill Summary -->
         <div class="card">
-            <div class="card-header"><h3>📋 Bill Summary</h3></div>
+            <div class="card-header"><h3><?= svgIcon('list') ?> Bill Summary</h3></div>
             <div class="card-body">
                 <table style="font-size:.88rem;width:100%">
                     <tr><td class="text-muted" style="padding:5px 0;width:160px">Bill ID</td><td><strong>#<?= $billId ?></strong></td></tr>
@@ -69,7 +69,7 @@ renderHead('Bill Detail');
         </div>
         <!-- Teacher Info -->
         <div class="card">
-            <div class="card-header"><h3>👨‍🏫 Teacher Info</h3></div>
+            <div class="card-header"><h3><?= svgIcon('teacher') ?> Teacher Info</h3></div>
             <div class="card-body">
                 <table style="font-size:.88rem;width:100%">
                     <tr><td class="text-muted" style="padding:5px 0;width:120px">Name</td><td><?= e($bill['tname']) ?></td></tr>
@@ -85,7 +85,7 @@ renderHead('Bill Detail');
 
     <!-- Lecture Breakdown -->
     <div class="card">
-        <div class="card-header"><h3>📅 Lecture Breakdown</h3></div>
+        <div class="card-header"><h3><?= svgIcon('calendar') ?> Lecture Breakdown</h3></div>
         <div class="table-wrap">
             <table>
                 <thead><tr><th>#</th><th>Date</th><th>Subject</th><th>Theory Hrs</th><th>Practical Hrs</th><th>Other Hrs</th><th>Amount</th></tr></thead>

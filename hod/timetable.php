@@ -96,7 +96,7 @@ renderHead('Timetable');
                                 <input type="hidden" name="entry_id"     value="<?= $e['id'] ?>">
                                 <input type="hidden" name="filter_class" value="<?= $filterClass ?>">
                                 <button class="btn btn-outline btn-sm" style="color:var(--rejected);border-color:#FECACA"
-                                        onclick="return confirmAction('Remove this entry?')">🗑</button>
+                                        onclick="return confirmAction('Remove this entry?')"><?= svgIcon('delete') ?></button>
                             </form>
                         </td>
                     </tr>
@@ -105,13 +105,13 @@ renderHead('Timetable');
                 </table>
             </div>
             <?php else: ?>
-            <div class="empty-state"><div class="icon">📅</div><h3>No timetable entries</h3><p>Add entries using the form.</p></div>
+            <div class="empty-state"><div class="icon"><?= svgIcon('calendar') ?></div><h3>No timetable entries</h3><p>Add entries using the form.</p></div>
             <?php endif; ?>
         </div>
 
         <!-- Add Entry Form -->
         <div class="card" style="position:sticky;top:80px">
-            <div class="card-header"><h3>➕ Add Entry</h3></div>
+            <div class="card-header"><h3><?= svgIcon('add') ?> Add Entry</h3></div>
             <div class="card-body">
                 <form method="POST">
                     <input type="hidden" name="action"       value="add">
@@ -165,13 +165,13 @@ renderHead('Timetable');
                         <label>Academic Year</label>
                         <input type="text" name="academic_year" class="form-control" value="<?= date('Y').'-'.(date('y')+1) ?>">
                     </div>
-                    <button type="submit" class="btn btn-primary" style="width:100%">➕ Add Entry</button>
+                    <button type="submit" class="btn btn-primary" style="width:100%"><?= svgIcon('add') ?> Add Entry</button>
                 </form>
             </div>
         </div>
     </div>
     <?php else: ?>
-    <div class="card"><div class="empty-state"><div class="icon">📅</div><h3>Select a class above</h3><p>Choose a class to view and manage its timetable.</p></div></div>
+    <div class="card"><div class="empty-state"><div class="icon"><?= svgIcon('calendar') ?></div><h3>Select a class above</h3><p>Choose a class to view and manage its timetable.</p></div></div>
     <?php endif; ?>
 </div>
 </div>

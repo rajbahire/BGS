@@ -92,8 +92,9 @@ renderHead('My Profile');
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem">
 
         <!-- Personal Info -->
+        <div style="display:flex;flex-direction:column;gap:1.5rem">
         <div class="card">
-            <div class="card-header"><h3>👤 Personal Information</h3></div>
+            <div class="card-header"><h3><?= svgIcon('profile') ?> Personal Information</h3></div>
             <div class="card-body">
                 <!-- Avatar -->
                 <div style="display:flex;align-items:center;gap:14px;padding:1rem;background:var(--bg);border-radius:var(--radius);margin-bottom:1.2rem">
@@ -119,23 +120,27 @@ renderHead('My Profile');
                     <div class="form-group"><label>Mode</label><input type="text" class="form-control" value="<?= ucfirst($row['teacher_mode']??'—') ?>" disabled></div>
                     <div class="form-group"><label>Assigned Subject</label><input type="text" class="form-control" value="<?= e(($row['subject_name']??'—').($row['subject_code']?' ('.$row['subject_code'].')':'')) ?>" disabled></div>
                     <div class="form-group"><label>Appointment Order No. <span style="color:red">*</span></label><input type="text" name="appointment_order_no" class="form-control" value="<?= e($row['appointment_order_no']??'') ?>" placeholder="Enter appointment order number"></div>
-                    <button type="submit" class="btn btn-primary">💾 Save Changes</button>
-                </form>
-
-                <hr class="divider">
-                <!-- Photo upload -->
-                <form method="POST" enctype="multipart/form-data">
-                    <input type="hidden" name="action" value="upload_photo">
-                    <div class="form-group"><label>Update Profile Photo</label><input type="file" name="photo" class="form-control" accept=".jpg,.jpeg,.png"></div>
-                    <button type="submit" class="btn btn-primary">📷 Upload Photo</button>
+                    <button type="submit" class="btn btn-primary"><?= svgIcon('save') ?> Save Changes</button>
                 </form>
             </div>
         </div>
 
+        <div class="card">
+            <div class="card-header"><h3><?= svgIcon('upload-photo') ?> Update Profile Photo</h3></div>
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    <input type="hidden" name="action" value="upload_photo">
+                    <div class="form-group"><label>Select Photo (JPG, JPEG, PNG)</label><input type="file" name="photo" class="form-control" accept=".jpg,.jpeg,.png"></div>
+                    <button type="submit" class="btn btn-primary"><?= svgIcon('upload-photo') ?> Upload Photo</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
         <div style="display:flex;flex-direction:column;gap:1.5rem">
             <!-- Bank Details -->
             <div class="card">
-                <div class="card-header"><h3>🏦 Bank Details</h3></div>
+                <div class="card-header"><h3><?= svgIcon('building') ?> Bank Details</h3></div>
                 <div class="card-body">
                     <form method="POST">
                         <input type="hidden" name="action" value="bank">
@@ -143,7 +148,7 @@ renderHead('My Profile');
                         <div class="form-group"><label>Account Number <span style="color:red">*</span></label><input type="text" name="account_no" class="form-control" value="<?= e($row['account_no']??'') ?>" placeholder="Account Number" required></div>
                         <div class="form-group"><label>IFSC Code <span style="color:red">*</span></label><input type="text" name="ifsc" class="form-control" style="text-transform:uppercase" value="<?= e($row['ifsc']??'') ?>" placeholder="IFSC Code" required></div>
                         <div class="form-group"><label>PAN Number <span style="color:red">*</span></label><input type="text" name="pan" class="form-control" style="text-transform:uppercase" value="<?= e($row['pan']??'') ?>" placeholder="PAN Number" required></div>
-                        <button type="submit" class="btn btn-primary">💾 Save Bank Details</button>
+                        <button type="submit" class="btn btn-primary"><?= svgIcon('save') ?> Save Bank Details</button>
                     </form>
                 </div>
             </div>
@@ -151,7 +156,7 @@ renderHead('My Profile');
             <!-- KYC Documents -->
             <div class="card">
                 <div class="card-header">
-                    <h3>📎 KYC Documents</h3>
+                    <h3><?= svgIcon('paperclip') ?> KYC Documents</h3>
                 </div>
                 <div class="card-body">
                     <form method="POST" enctype="multipart/form-data">
@@ -159,39 +164,39 @@ renderHead('My Profile');
                         <div class="form-group">
                             <label>PAN Card (JPG/PNG/PDF) <span style="color:red">*</span></label>
                             <?php if($row['pan_image']): ?>
-                            <div class="text-sm text-muted" style="margin-bottom:5px">✅ Uploaded: <?= e($row['pan_image']) ?></div>
+                            <div class="text-sm text-muted" style="margin-bottom:5px"><?= svgIcon('check') ?> Uploaded: <?= e($row['pan_image']) ?></div>
                             <?php endif; ?>
                             <input type="file" name="pan" class="form-control" accept=".jpg,.jpeg,.png,.pdf">
                         </div>
                         <div class="form-group">
                             <label>Aadhar Card (JPG/PNG/PDF) <span style="color:red">*</span></label>
                             <?php if($row['aadhar_image']): ?>
-                            <div class="text-sm text-muted" style="margin-bottom:5px">✅ Uploaded: <?= e($row['aadhar_image']) ?></div>
+                            <div class="text-sm text-muted" style="margin-bottom:5px"><?= svgIcon('check') ?> Uploaded: <?= e($row['aadhar_image']) ?></div>
                             <?php endif; ?>
                             <input type="file" name="aadhar" class="form-control" accept=".jpg,.jpeg,.png,.pdf">
                         </div>
                         <div class="form-group">
                             <label>Appointment Order letter (JPG/PNG/PDF) <span style="color:red">*</span></label>
                             <?php if($row['appointment_image']): ?>
-                            <div class="text-sm text-muted" style="margin-bottom:5px">✅ Uploaded: <?= e($row['appointment_image']) ?></div>
+                            <div class="text-sm text-muted" style="margin-bottom:5px"><?= svgIcon('check') ?> Uploaded: <?= e($row['appointment_image']) ?></div>
                             <?php endif; ?>
                             <input type="file" name="appointment" class="form-control" accept=".jpg,.jpeg,.png,.pdf">
                         </div>
-                        <button type="submit" class="btn btn-primary">📤 Upload Documents</button>
+                        <button type="submit" class="btn btn-primary"><?= svgIcon('upload') ?> Upload Documents</button>
                     </form>
                 </div>
             </div>
 
             <!-- Change Password -->
             <div class="card">
-                <div class="card-header"><h3>🔒 Change Password</h3></div>
+                <div class="card-header"><h3><?= svgIcon('key') ?> Change Password</h3></div>
                 <div class="card-body">
                     <form method="POST">
                         <input type="hidden" name="action" value="password">
                         <div class="form-group"><label>Current Password <span style="color:red">*</span></label><input type="password" name="current_password" class="form-control" required></div>
                         <div class="form-group"><label>New Password <span style="color:red">*</span></label><input type="password" name="new_password" class="form-control" required placeholder="Min. 6 characters"></div>
                         <div class="form-group"><label>Confirm Password <span style="color:red">*</span></label><input type="password" name="confirm_password" class="form-control" required placeholder="Repeat new password"></div>
-                        <button type="submit" class="btn btn-primary">🔑 Change Password</button>
+                        <button type="submit" class="btn btn-primary"><?= svgIcon('reset') ?> Change Password</button>
                     </form>
                 </div>
             </div>

@@ -136,11 +136,11 @@ renderHead('Departments');
                             <?php endif; ?>
                         </td>
                         <td>
-                            <a href="?edit=<?= $d['id'] ?>" class="btn btn-outline btn-sm">✏️ Edit</a>
+                            <a href="?edit=<?= $d['id'] ?>" class="btn btn-outline btn-sm"><?= svgIcon('edit') ?> Edit</a>
                             <form method="POST" style="display:inline" onsubmit="return confirmAction('Delete this department? Linked classes and users will block the delete.')">
                                 <input type="hidden" name="action" value="delete">
                                 <input type="hidden" name="id" value="<?= $d['id'] ?>">
-                                <button type="submit" class="btn btn-delete btn-sm">🗑 Delete</button>
+                                <button type="submit" class="btn btn-delete btn-sm"><?= svgIcon('delete') ?> Delete</button>
                             </form>
                         </td>
                     </tr>
@@ -150,7 +150,7 @@ renderHead('Departments');
             </div>
             <?php else: ?>
             <div class="empty-state">
-                <div class="icon">🏛</div>
+                <div class="icon"><?= svgIcon('department') ?></div>
                 <h3>No departments yet</h3>
                 <p>Add your first department using the form.</p>
             </div>
@@ -160,7 +160,7 @@ renderHead('Departments');
         <!-- Add / Edit Form -->
         <div class="card" style="position:sticky;top:80px">
             <div class="card-header">
-                <h3><?= $editRow ? '✏️ Edit Department' : '➕ Add Department' ?></h3>
+                <h3><?= $editRow ? svgIcon('edit') . ' Edit Department' : svgIcon('add') . ' Add Department' ?></h3>
             </div>
             <div class="card-body">
                 <form method="POST">
@@ -197,7 +197,7 @@ renderHead('Departments');
                     <?php endif; ?>
 
                     <button type="submit" class="btn btn-primary" style="width:100%">
-                        <?= $editRow ? '💾 Update Department' : '➕ Add Department' ?>
+                        <?= $editRow ? svgIcon('save') . ' Update Department' : svgIcon('add') . ' Add Department' ?>
                     </button>
                     <?php if ($editRow): ?>
                     <a href="departments.php" class="btn btn-outline" style="width:100%;margin-top:8px;justify-content:center">Cancel</a>

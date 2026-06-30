@@ -162,12 +162,12 @@ renderHead('Subjects');
                             <td class="text-sm"><?= e($s['class_label']) ?><br><span class="text-muted text-xs"><?= e($s['dept_name']) ?></span></td>
                             <td><?= modeBadge($s['mode']) ?></td>
                             <td><?= $s['is_active'] ? '<span class="badge badge-approved">Active</span>' : '<span class="badge badge-rejected">Inactive</span>' ?></td>
-                             <td><a href="?edit=<?= $s['id'] ?>&dept=<?= $filterDept ?>&class=<?= $filterClass ?>" class="btn btn-outline btn-sm">✏️ Edit</a>
+                             <td><a href="?edit=<?= $s['id'] ?>&dept=<?= $filterDept ?>&class=<?= $filterClass ?>" class="btn btn-outline btn-sm"><?= svgIcon('edit') ?> Edit</a>
                                 <form method="POST" style="display:inline" onsubmit="return confirmAction('Delete / deactivate this subject?')">
                                     <input type="hidden" name="action" value="delete">
                                     <input type="hidden" name="id" value="<?= $s['id'] ?>">
                                     <input type="hidden" name="filter_dept" value="<?= $filterDept ?>">
-                                    <button type="submit" class="btn btn-delete btn-sm">🗑 Delete</button>
+                                    <button type="submit" class="btn btn-delete btn-sm"><?= svgIcon('delete') ?> Delete</button>
                                 </form>
                              </td>
                         </tr>
@@ -176,14 +176,14 @@ renderHead('Subjects');
                     </table>
                 </div>
                 <?php else: ?>
-                <div class="empty-state"><div class="icon">📖</div><h3>No subjects found</h3><p>Add subjects using the form.</p></div>
+                <div class="empty-state"><div class="icon"><?= svgIcon('document') ?></div><h3>No subjects found</h3><p>Add subjects using the form.</p></div>
                 <?php endif; ?>
             </div>
         </div>
 
         <!-- Form -->
         <div class="card" style="position:sticky;top:80px">
-            <div class="card-header"><h3><?= $editRow ? '✏️ Edit Subject' : '➕ Add Subject' ?></h3></div>
+            <div class="card-header"><h3><?= $editRow ? svgIcon('edit') . ' Edit Subject' : svgIcon('add') . ' Add Subject' ?></h3></div>
             <div class="card-body">
                 <form method="POST">
                     <input type="hidden" name="action" value="<?= $editRow ? 'edit' : 'add' ?>">
@@ -247,7 +247,7 @@ renderHead('Subjects');
                     <?php endif; ?>
 
                     <button type="submit" class="btn btn-primary" style="width:100%">
-                        <?= $editRow ? '💾 Update Subject' : '➕ Add Subject' ?>
+                        <?= $editRow ? svgIcon('save') . ' Update Subject' : svgIcon('add') . ' Add Subject' ?>
                     </button>
                     <?php if ($editRow): ?>
                     <a href="subjects.php" class="btn btn-outline" style="width:100%;margin-top:8px;justify-content:center">Cancel</a>

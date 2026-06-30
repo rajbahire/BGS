@@ -57,6 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($action === 'edit') {
         $id     = (int)$_POST['id'];
         $name   = trim($_POST['name']  ?? '');
+        $email  = trim($_POST['email'] ?? '');
         $phone  = trim($_POST['phone'] ?? '');
         $active = (int)$_POST['is_active'];
         $type   = $_POST['teacher_type']  ?? null;
@@ -68,8 +69,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $rateO  = (float)($_POST['rate_other']       ?? 0);
         $rateH  = (float)($_POST['rate_per_hour']    ?? 0);
         $appNo  = trim($_POST['appointment_order_no']?? '');
-        $pdo->prepare("UPDATE users SET name=?,phone=?,is_active=?,teacher_type=?,teacher_mode=?,subject_id=?,subject_id_2=?,rate_theory=?,rate_practical=?,rate_other=?,rate_per_hour=?,appointment_order_no=? WHERE id=? AND department_id=?")
-            ->execute([$name,$phone,$active,$type?:null,$mode?:null,$subj?:null,$subj2?:null,$rateT,$rateP,$rateO,$rateH,$appNo,$id,$deptId]);
+        $pass   = trim($_POST['password'] ?? '');
+
+        // Email uniqueness check (exclude current user)
+        if ($email) {
+            $dup = $pdo->prepare("SELECT id FROM users WHERE email=? AND id!=?");
+            $dup->execute([$email, $id]);
+            if ($dup->fetch()) {
+                setFlash('error','Email already exists for another user.');
+                header('Location: manage-users.php?edit='.$id.'&tab='.($_POST['tab']??'teachers')); exit;
+            }
+        }
+
+        if ($pass) {
+            $pdo->prepare("UPDATE users SET name=?,email=?,phone=?,is_active=?,teacher_type=?,teacher_mode=?,subject_id=?,subject_id_2=?,rate_theory=?,rate_practical=?,rate_other=?,rate_per_hour=?,appointment_order_no=?,password=? WHERE id=? AND department_id=?")
+                ->execute([$name,$email,$phone,$active,$type?:null,$mode?:null,$subj?:null,$subj2?:null,$rateT,$rateP,$rateO,$rateH,$appNo,password_hash($pass,PASSWORD_DEFAULT),$id,$deptId]);
+        } else {
+            $pdo->prepare("UPDATE users SET name=?,email=?,phone=?,is_active=?,teacher_type=?,teacher_mode=?,subject_id=?,subject_id_2=?,rate_theory=?,rate_practical=?,rate_other=?,rate_per_hour=?,appointment_order_no=? WHERE id=? AND department_id=?")
+                ->execute([$name,$email,$phone,$active,$type?:null,$mode?:null,$subj?:null,$subj2?:null,$rateT,$rateP,$rateO,$rateH,$appNo,$id,$deptId]);
+        }
+        logActivity($pdo,$user['id'],'edit_user',"Updated user: $name");
         setFlash('success','User updated.');
     }
 
@@ -178,8 +197,8 @@ renderHead('Manage Users');
 
     <!-- Tabs -->
     <div class="d-flex gap-8 mb-2" style="border-bottom:1px solid var(--border);padding-bottom:0">
-        <a href="?tab=teachers" class="btn <?= $activeTab==='teachers'?'btn-primary':'btn-outline' ?> btn-sm">👨‍🏫 Teachers (<?= count($teachers) ?>)</a>
-        <a href="?tab=students" class="btn <?= $activeTab==='students'?'btn-primary':'btn-outline' ?> btn-sm">🎓 E&L Students (<?= count($students) ?>)</a>
+        <a href="?tab=teachers" class="btn <?= $activeTab==='teachers'?'btn-primary':'btn-outline' ?> btn-sm"><?= svgIcon('teacher') ?> Teachers (<?= count($teachers) ?>)</a>
+        <a href="?tab=students" class="btn <?= $activeTab==='students'?'btn-primary':'btn-outline' ?> btn-sm"><?= svgIcon('student') ?> E&L Students (<?= count($students) ?>)</a>
     </div>
 
     <?php if($activeTab==='teachers'): ?>
@@ -209,9 +228,9 @@ renderHead('Manage Users');
                         <td><?= $t['is_active']?'<span class="badge badge-approved">Active</span>':'<span class="badge badge-rejected">Inactive</span>' ?></td>
                         <td>
                             <div class="d-flex gap-8" style="flex-wrap:wrap">
-                                <a href="?edit=<?= $t['id'] ?>&tab=teachers" class="btn btn-outline btn-sm">✏️ Edit</a>
-                                <form method="POST" style="margin:0"><input type="hidden" name="action" value="reset_password"><input type="hidden" name="id" value="<?= $t['id'] ?>"><input type="hidden" name="urole" value="teacher"><input type="hidden" name="tab" value="teachers"><button class="btn btn-outline btn-sm" onclick="return confirmAction('Reset password to teacher@1234?')">🔑</button></form>
-                                <form method="POST" style="margin:0" onsubmit="return confirmAction('Delete this teacher permanently? This cannot be undone.')"><input type="hidden" name="action" value="delete"><input type="hidden" name="id" value="<?= $t['id'] ?>"><input type="hidden" name="urole" value="teacher"><input type="hidden" name="tab" value="teachers"><button class="btn btn-delete btn-sm">🗑 Delete</button></form>
+                                <a href="?edit=<?= $t['id'] ?>&tab=teachers" class="btn btn-outline btn-sm"><?= svgIcon('edit') ?> Edit</a>
+                                <form method="POST" style="margin:0"><input type="hidden" name="action" value="reset_password"><input type="hidden" name="id" value="<?= $t['id'] ?>"><input type="hidden" name="urole" value="teacher"><input type="hidden" name="tab" value="teachers"><button class="btn btn-outline btn-sm" onclick="return confirmAction('Reset password to teacher@1234?')"><?= svgIcon('reset') ?></button></form>
+                                <form method="POST" style="margin:0" onsubmit="return confirmAction('Delete this teacher permanently? This cannot be undone.')"><input type="hidden" name="action" value="delete"><input type="hidden" name="id" value="<?= $t['id'] ?>"><input type="hidden" name="urole" value="teacher"><input type="hidden" name="tab" value="teachers"><button class="btn btn-delete btn-sm"><?= svgIcon('delete') ?> Delete</button></form>
                             </div>
                         </td>
                     </tr>
@@ -219,13 +238,13 @@ renderHead('Manage Users');
                     </tbody>
                 </table>
             </div>
-            <?php else: ?><div class="empty-state"><div class="icon">👨‍🏫</div><h3>No teachers added yet</h3></div><?php endif; ?>
+            <?php else: ?><div class="empty-state"><div class="icon"><?= svgIcon('teacher') ?></div><h3>No teachers added yet</h3></div><?php endif; ?>
         </div>
 
         <!-- Add/Edit Teacher Form -->
         <div class="card" style="position:sticky;top:80px">
             <div class="card-header">
-                <h3><?= $editRow?'✏️ Edit Teacher':'➕ Add Teacher' ?></h3>
+                <h3><?= $editRow ? svgIcon('edit') . ' Edit Teacher' : svgIcon('add') . ' Add Teacher' ?></h3>
             </div>
             <div class="card-body">
                 <form method="POST">
@@ -233,9 +252,11 @@ renderHead('Manage Users');
                     <input type="hidden" name="tab" value="teachers">
                     <?php if($editRow): ?><input type="hidden" name="id" value="<?= $editRow['id'] ?>"><?php endif; ?>
                     <div class="form-group"><label>Full Name <span style="color:red">*</span></label><input type="text" name="name" class="form-control" required value="<?= e($editRow['name']??'') ?>"></div>
+                    <div class="form-group"><label>Email <span style="color:red">*</span></label><input type="email" name="email" class="form-control" required placeholder="teacher@gcea.edu" value="<?= e($editRow['email']??'') ?>"></div>
                     <?php if(!$editRow): ?>
-                    <div class="form-group"><label>Email <span style="color:red">*</span></label><input type="email" name="email" class="form-control" required placeholder="teacher@gcea.edu"></div>
                     <div class="form-group"><label>Password</label><input type="text" name="password" class="form-control" value="teacher@1234"></div>
+                    <?php else: ?>
+                    <div class="form-group"><label>New Password</label><input type="password" name="password" class="form-control" placeholder="Leave blank to keep current password"></div>
                     <?php endif; ?>
                     <div class="form-group"><label>Phone</label><input type="text" name="phone" class="form-control" value="<?= e($editRow['phone']??'') ?>"></div>
                     <div class="form-group"><label>Teacher Type <span style="color:red">*</span></label>
@@ -264,7 +285,7 @@ renderHead('Manage Users');
                         <div class="form-group"><label>Rate Other (₹) <span style="color:red">*</span></label><input type="number" name="rate_other" class="form-control" step="0.01" min="0" value="<?= $editRow['rate_other']??0 ?>"></div>
                     </div>
                     <?php if($editRow): ?><div class="form-group"><label>Status</label><select name="is_active" class="form-control"><option value="1" <?= $editRow['is_active']?'selected':'' ?>>Active</option><option value="0" <?= !$editRow['is_active']?'selected':'' ?>>Inactive</option></select></div><?php endif; ?>
-                    <button type="submit" class="btn btn-primary" style="width:100%"><?= $editRow?'💾 Update':'➕ Add Teacher' ?></button>
+                    <button type="submit" class="btn btn-primary" style="width:100%"><?= $editRow ? svgIcon('save') . ' Update' : svgIcon('add') . ' Add' ?> Teacher</button>
                     <?php if($editRow): ?><a href="?tab=teachers" class="btn btn-outline" style="width:100%;margin-top:8px;justify-content:center">Cancel</a><?php endif; ?>
                 </form>
             </div>
@@ -290,9 +311,9 @@ renderHead('Manage Users');
                         <td><?= $s['is_active']?'<span class="badge badge-approved">Active</span>':'<span class="badge badge-rejected">Inactive</span>' ?></td>
                         <td>
                             <div class="d-flex gap-8" style="flex-wrap:wrap">
-                                <a href="?edit=<?= $s['id'] ?>&tab=students" class="btn btn-outline btn-sm">✏️ Edit</a>
-                                <form method="POST" style="margin:0"><input type="hidden" name="action" value="reset_password"><input type="hidden" name="id" value="<?= $s['id'] ?>"><input type="hidden" name="urole" value="student"><input type="hidden" name="tab" value="students"><button class="btn btn-outline btn-sm" onclick="return confirmAction('Reset password to student@1234?')">🔑</button></form>
-                                <form method="POST" style="margin:0" onsubmit="return confirmAction('Delete this student permanently? This cannot be undone.')"><input type="hidden" name="action" value="delete"><input type="hidden" name="id" value="<?= $s['id'] ?>"><input type="hidden" name="urole" value="student"><input type="hidden" name="tab" value="students"><button class="btn btn-delete btn-sm">🗑 Delete</button></form>
+                                <a href="?edit=<?= $s['id'] ?>&tab=students" class="btn btn-outline btn-sm"><?= svgIcon('edit') ?> Edit</a>
+                                <form method="POST" style="margin:0"><input type="hidden" name="action" value="reset_password"><input type="hidden" name="id" value="<?= $s['id'] ?>"><input type="hidden" name="urole" value="student"><input type="hidden" name="tab" value="students"><button class="btn btn-outline btn-sm" onclick="return confirmAction('Reset password to student@1234?')"><?= svgIcon('reset') ?></button></form>
+                                <form method="POST" style="margin:0" onsubmit="return confirmAction('Delete this student permanently? This cannot be undone.')"><input type="hidden" name="action" value="delete"><input type="hidden" name="id" value="<?= $s['id'] ?>"><input type="hidden" name="urole" value="student"><input type="hidden" name="tab" value="students"><button class="btn btn-delete btn-sm"><?= svgIcon('delete') ?> Delete</button></form>
                             </div>
                         </td>
                     </tr>
@@ -300,13 +321,13 @@ renderHead('Manage Users');
                     </tbody>
                 </table>
             </div>
-            <?php else: ?><div class="empty-state"><div class="icon">🎓</div><h3>No students added yet</h3></div><?php endif; ?>
+            <?php else: ?><div class="empty-state"><div class="icon"><?= svgIcon('student') ?></div><h3>No students added yet</h3></div><?php endif; ?>
         </div>
 
         <!-- Add/Edit Student Form -->
         <div class="card" style="position:sticky;top:80px">
             <div class="card-header">
-                <h3><?= ($editRow&&$editRow['role']==='student')?'✏️ Edit Student':'➕ Add Student' ?></h3>
+                <h3><?= ($editRow&&$editRow['role']==='student') ? svgIcon('edit') . ' Edit Student' : svgIcon('add') . ' Add Student' ?></h3>
             </div>
             <div class="card-body">
                 <form method="POST">
@@ -314,7 +335,10 @@ renderHead('Manage Users');
                     <input type="hidden" name="tab" value="students">
                     <?php if($editRow&&$editRow['role']==='student'): ?><input type="hidden" name="id" value="<?= $editRow['id'] ?>"><?php endif; ?>
                     <div class="form-group"><label>Full Name <span style="color:red">*</span></label><input type="text" name="name" class="form-control" placeholder="Enter Full Name" required value="<?= e(($editRow&&$editRow['role']==='student')?$editRow['name']:'') ?>"></div>
-                    <?php if(!($editRow&&$editRow['role']==='student')): ?>
+                    <?php if($editRow&&$editRow['role']==='student'): ?>
+                    <div class="form-group"><label>Email <span style="color:red">*</span></label><input type="email" name="email" class="form-control" required placeholder="student@gcea.edu" value="<?= e($editRow['email']) ?>"></div>
+                    <div class="form-group"><label>New Password</label><input type="password" name="password" class="form-control" placeholder="Leave blank to keep current password"></div>
+                    <?php else: ?>
                     <div class="form-group"><label>Email <span style="color:red">*</span></label><input type="email" name="email" class="form-control" required placeholder="student@gcea.edu"></div>
                     <div class="form-group"><label>Password</label><input type="text" name="password" class="form-control" value="student@1234"></div>
                     <?php endif; ?>
@@ -329,7 +353,7 @@ renderHead('Manage Users');
                     </div>
                     <div class="form-group"><label>Rate per Hour (₹) <span style="color:red">*</span></label><input type="number" name="rate_per_hour" class="form-control" step="0.01" min="0" value="<?= ($editRow&&$editRow['role']==='student')?$editRow['rate_per_hour']:50 ?>" required></div>
                     <?php if($editRow&&$editRow['role']==='student'): ?><div class="form-group"><label>Status</label><select name="is_active" class="form-control"><option value="1" <?= $editRow['is_active']?'selected':'' ?>>Active</option><option value="0" <?= !$editRow['is_active']?'selected':'' ?>>Inactive</option></select></div><?php endif; ?>
-                    <button type="submit" class="btn btn-primary" style="width:100%"><?= ($editRow&&$editRow['role']==='student')?'💾 Update':'➕ Add Student' ?></button>
+                    <button type="submit" class="btn btn-primary" style="width:100%"><?= ($editRow&&$editRow['role']==='student')?svgIcon('save') . ' Update':svgIcon('add') . ' Add Student' ?></button>
                     <?php if($editRow&&$editRow['role']==='student'): ?><a href="?tab=students" class="btn btn-outline" style="width:100%;margin-top:8px;justify-content:center">Cancel</a><?php endif; ?>
                 </form>
             </div>

@@ -42,10 +42,10 @@ function togglePw(inputId, eyeId) {
     if (!inp) return;
     if (inp.type === 'password') {
         inp.type = 'text';
-        if (eye) eye.textContent = '🙈';
+        if (eye) eye.innerHTML = eye.dataset.off || eye.dataset.on || '';
     } else {
         inp.type = 'password';
-        if (eye) eye.textContent = '👁';
+        if (eye) eye.innerHTML = eye.dataset.on || eye.dataset.off || '';
     }
 }
 

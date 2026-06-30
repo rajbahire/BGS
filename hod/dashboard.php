@@ -45,28 +45,28 @@ renderHead('HOD Dashboard');
     </div>
 
     <div class="stats-grid">
-        <div class="stat-card"><div class="stat-icon amber">⏳</div><div><div class="stat-label">Pending Requests</div><div class="stat-value"><?= $pending ?></div></div></div>
-        <div class="stat-card"><div class="stat-icon green">✅</div><div><div class="stat-label">Approved Bills</div><div class="stat-value"><?= $approved ?></div></div></div>
-        <div class="stat-card"><div class="stat-icon red">❌</div><div><div class="stat-label">Rejected</div><div class="stat-value"><?= $rejected ?></div></div></div>
-        <div class="stat-card"><div class="stat-icon blue">👨‍🏫</div><div><div class="stat-label">Teachers</div><div class="stat-value"><?= $teachers ?></div></div></div>
-        <div class="stat-card"><div class="stat-icon teal">🎓</div><div><div class="stat-label">E&L Students</div><div class="stat-value"><?= $students ?></div></div></div>
-        <div class="stat-card"><div class="stat-icon green">💰</div><div><div class="stat-label">This Month Paid</div><div class="stat-value sm"><?= formatINR($monthPaid) ?></div></div></div>
-        <div class="stat-card"><div class="stat-icon purple">💳</div><div><div class="stat-label">Total Disbursed</div><div class="stat-value sm"><?= formatINR($totalPaid) ?></div></div></div>
+        <div class="stat-card"><div class="stat-icon amber"><?= svgIcon('pending') ?></div><div><div class="stat-label">Pending Requests</div><div class="stat-value"><?= $pending ?></div></div></div>
+        <div class="stat-card"><div class="stat-icon green"><?= svgIcon('approved') ?></div><div><div class="stat-label">Approved Bills</div><div class="stat-value"><?= $approved ?></div></div></div>
+        <div class="stat-card"><div class="stat-icon red"><?= svgIcon('rejected') ?></div><div><div class="stat-label">Rejected</div><div class="stat-value"><?= $rejected ?></div></div></div>
+        <div class="stat-card"><div class="stat-icon blue"><?= svgIcon('teacher') ?></div><div><div class="stat-label">Teachers</div><div class="stat-value"><?= $teachers ?></div></div></div>
+        <div class="stat-card"><div class="stat-icon teal"><?= svgIcon('student') ?></div><div><div class="stat-label">E&L Students</div><div class="stat-value"><?= $students ?></div></div></div>
+        <div class="stat-card"><div class="stat-icon green"><?= svgIcon('fund-requests') ?></div><div><div class="stat-label">This Month Paid</div><div class="stat-value sm"><?= formatINR($monthPaid) ?></div></div></div>
+        <div class="stat-card"><div class="stat-icon purple"><?= svgIcon('distributed') ?></div><div><div class="stat-label">Total Disbursed</div><div class="stat-value sm"><?= formatINR($totalPaid) ?></div></div></div>
     </div>
 
     <div class="d-flex gap-10 flex-wrap mb-2">
         <a href="requests.php" class="btn btn-primary">
-            📥 Pending Requests
+            <?= svgIcon('pending') ?> Pending Requests
             <?php if($pending): ?><span style="background:#EF4444;color:#fff;font-size:.68rem;font-weight:700;padding:1px 6px;border-radius:20px"><?= $pending ?></span><?php endif; ?>
         </a>
-        <a href="manage-users.php" class="btn btn-outline">👨‍🏫 Manage Users</a>
-        <a href="timetable.php"    class="btn btn-outline">📅 Timetable</a>
-        <a href="other-bills.php"  class="btn btn-outline">📄 Other Bills</a>
+        <a href="manage-users.php" class="btn btn-outline"><?= svgIcon('manage-users') ?> Manage Users</a>
+        <a href="timetable.php"    class="btn btn-outline"><?= svgIcon('timetable') ?> Timetable</a>
+        <a href="other-bills.php"  class="btn btn-outline"><?= svgIcon('other-bills') ?> Other Bills</a>
     </div>
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem">
         <div class="card">
-            <div class="card-header"><h3>📥 Pending Requests</h3><a href="requests.php" class="btn btn-outline btn-sm">View All</a></div>
+            <div class="card-header"><h3>Pending Requests</h3><a href="requests.php" class="btn btn-outline btn-sm">View All</a></div>
             <?php if($pendingBills): ?>
             <div class="table-wrap">
                 <table>
@@ -85,15 +85,15 @@ renderHead('HOD Dashboard');
                 </table>
             </div>
             <?php else: ?>
-            <div class="empty-state"><div class="icon">🎉</div><h3>No pending requests</h3><p>All caught up!</p></div>
+            <div class="empty-state"><div class="icon"><?= svgIcon('check') ?></div><h3>No pending requests</h3><p>All caught up!</p></div>
             <?php endif; ?>
         </div>
 
         <div class="card">
-            <div class="card-header"><h3>🕐 Recent Activity</h3></div>
-            <?php $icons=['login'=>'🔑','logout'=>'🚪','submit_bill'=>'📤','approve_bill'=>'✅','reject_bill'=>'❌','add_lecture'=>'📅','add_teacher'=>'➕']; ?>
+            <div class="card-header"><h3>Recent Activity</h3></div>
+            <?php $icons=['login'=>svgIcon('login'),'logout'=>svgIcon('logout'),'submit_bill'=>svgIcon('upload'),'approve_bill'=>svgIcon('approved'),'reject_bill'=>svgIcon('rejected'),'add_lecture'=>svgIcon('calendar'),'add_teacher'=>svgIcon('add')]; ?>
             <?php if($recentActivity): ?>
-            <?php foreach($recentActivity as $a): $icon=$icons[$a['action']]??'📋'; ?>
+            <?php foreach($recentActivity as $a): $icon=$icons[$a['action']]??svgIcon('list'); ?>
             <div style="display:flex;gap:10px;align-items:flex-start;padding:9px 1.3rem;border-bottom:1px solid var(--border)">
                 <div style="width:30px;height:30px;background:var(--bg);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:.88rem;flex-shrink:0"><?= $icon ?></div>
                 <div>
@@ -104,7 +104,7 @@ renderHead('HOD Dashboard');
             </div>
             <?php endforeach; ?>
             <?php else: ?>
-            <div class="empty-state"><div class="icon">📋</div><h3>No activity yet</h3></div>
+            <div class="empty-state"><div class="icon"><?= svgIcon('list') ?></div><h3>No activity yet</h3></div>
             <?php endif; ?>
         </div>
     </div>

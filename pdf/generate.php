@@ -92,6 +92,7 @@ body{font-family:'Times New Roman',Times,serif;color:#000;background:#ccc}
 .pbar{position:fixed;top:0;left:0;right:0;z-index:999;background:#1a3a6e;color:#fff;display:flex;align-items:center;gap:12px;padding:9px 18px;font-family:Arial,sans-serif;font-size:12px}
 .pbar button{background:#fff;color:#1a3a6e;border:none;border-radius:4px;padding:6px 16px;font-weight:700;font-size:12px;cursor:pointer}
 .pbar a{color:rgba(255,255,255,.7);text-decoration:none;margin-left:auto}
+svg.icon{width:18px;height:18px;display:inline-block;vertical-align:middle;flex-shrink:0}
 .page{width:210mm;min-height:297mm;padding:13mm 14mm 12mm;margin:0 auto 14px;background:#fff;page-break-after:always;position:relative}
 @media screen{body{padding-top:50px}.page{box-shadow:0 2px 10px rgba(0,0,0,.3)}}
 @media print{.pbar{display:none!important}body{background:#fff;padding-top:0}.page{box-shadow:none;margin:0}}
@@ -125,7 +126,7 @@ th,td{border:1px solid #000;padding:1.5mm 2mm;vertical-align:top}
 <body>
 
 <div class="pbar">
-  <button onclick="window.print()">🖨 Print / Save as PDF</button>
+  <button onclick="window.print()"><?= svgIcon('printer') ?> Print / Save as PDF</button>
   <span>Bill #<?= str_pad($billId,5,'0',STR_PAD_LEFT) ?> &nbsp;|&nbsp; <?= h($month) ?> &nbsp;|&nbsp; <?= h($bill['tname']) ?></span>
   <a href="javascript:history.back()">← Back</a>
 </div>

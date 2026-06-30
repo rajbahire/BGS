@@ -30,23 +30,23 @@ renderHead('Teacher Dashboard');
 <div class="page-body">
     <?= getFlash() ?>
     <div class="page-header">
-        <h1>Welcome, <?= e(explode(' ',$user['name'])[0]) ?> 👋</h1>
+        <h1>Welcome, <?= e(explode(' ',$user['name'])[0]) ?></h1>
         <p><?= e($teacher['subject_name']??'') ?> <?= $teacher['subject_code']?'<span class="badge badge-expert">'.e($teacher['subject_code']).'</span>':'' ?> &nbsp;<?= teacherTypeBadge($teacher['teacher_type']??'regular') ?> &nbsp;<?= modeBadge($teacher['teacher_mode']??'theory') ?></p>
     </div>
 
     <div class="stats-grid">
-        <div class="stat-card"><div class="stat-icon amber">⏳</div><div><div class="stat-label">Pending</div><div class="stat-value"><?= $pendingBills ?></div></div></div>
-        <div class="stat-card"><div class="stat-icon green">✅</div><div><div class="stat-label">Approved</div><div class="stat-value"><?= $approvedBills ?></div></div></div>
-        <div class="stat-card"><div class="stat-icon red">❌</div><div><div class="stat-label">Rejected</div><div class="stat-value"><?= $rejectedBills ?></div></div></div>
-        <div class="stat-card"><div class="stat-icon blue">🧾</div><div><div class="stat-label">Total Bills</div><div class="stat-value"><?= $totalBills ?></div></div></div>
-        <div class="stat-card"><div class="stat-icon purple">📅</div><div><div class="stat-label">Hrs This Month</div><div class="stat-value"><?= number_format($lecThisMonth,1) ?></div></div></div>
-        <div class="stat-card"><div class="stat-icon green">💰</div><div><div class="stat-label">Total Earned</div><div class="stat-value sm"><?= formatINR($totalEarned) ?></div></div></div>
+        <div class="stat-card"><div class="stat-icon amber"><?= svgIcon('pending') ?></div><div><div class="stat-label">Pending</div><div class="stat-value"><?= $pendingBills ?></div></div></div>
+        <div class="stat-card"><div class="stat-icon green"><?= svgIcon('approved') ?></div><div><div class="stat-label">Approved</div><div class="stat-value"><?= $approvedBills ?></div></div></div>
+        <div class="stat-card"><div class="stat-icon red"><?= svgIcon('rejected') ?></div><div><div class="stat-label">Rejected</div><div class="stat-value"><?= $rejectedBills ?></div></div></div>
+        <div class="stat-card"><div class="stat-icon blue"><?= svgIcon('all-bills') ?></div><div><div class="stat-label">Total Bills</div><div class="stat-value"><?= $totalBills ?></div></div></div>
+        <div class="stat-card"><div class="stat-icon purple"><?= svgIcon('month') ?></div><div><div class="stat-label">Hrs This Month</div><div class="stat-value"><?= number_format($lecThisMonth,1) ?></div></div></div>
+        <div class="stat-card"><div class="stat-icon green"><?= svgIcon('fund-requests') ?></div><div><div class="stat-label">Total Earned</div><div class="stat-value sm"><?= formatINR($totalEarned) ?></div></div></div>
     </div>
 
     <div class="d-flex gap-10 flex-wrap mb-2">
-        <a href="my-bills.php"      class="btn btn-primary">📋 My Bills</a>
-        <a href="lectures.php"      class="btn btn-outline">📅 Add Lecture</a>
-        <a href="generate-bill.php" class="btn btn-outline">🧾 Generate Bill</a>
+        <a href="my-bills.php"      class="btn btn-primary"><?= svgIcon('all-bills') ?> My Bills</a>
+        <a href="lectures.php"      class="btn btn-outline"><?= svgIcon('lectures') ?> Add Lecture</a>
+        <a href="generate-bill.php" class="btn btn-outline"><?= svgIcon('generate-bill') ?> Generate Bill</a>
     </div>
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem">
@@ -68,7 +68,7 @@ renderHead('Teacher Dashboard');
                     </tbody>
                 </table>
             </div>
-            <?php else: ?><div class="empty-state"><div class="icon">📄</div><h3>No bills yet</h3></div><?php endif; ?>
+            <?php else: ?><div class="empty-state"><div class="icon"><?= svgIcon('document') ?></div><h3>No bills yet</h3></div><?php endif; ?>
         </div>
 
         <div class="card">
@@ -89,7 +89,7 @@ renderHead('Teacher Dashboard');
                     </tbody>
                 </table>
             </div>
-            <?php else: ?><div class="empty-state"><div class="icon">📅</div><h3>No lectures recorded</h3></div><?php endif; ?>
+            <?php else: ?><div class="empty-state"><div class="icon"><?= svgIcon('calendar') ?></div><h3>No lectures recorded</h3></div><?php endif; ?>
         </div>
     </div>
 </div>

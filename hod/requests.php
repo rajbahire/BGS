@@ -61,7 +61,7 @@ renderHead('Pending Requests');
             </table>
         </div>
         <?php else: ?>
-        <div class="empty-state"><div class="icon">🎉</div><h3>No pending requests</h3><p>All bills have been reviewed.</p></div>
+        <div class="empty-state"><div class="icon"><?= svgIcon('check') ?></div><h3>No pending requests</h3><p>All bills have been reviewed.</p></div>
         <?php endif; ?>
     </div>
 </div>

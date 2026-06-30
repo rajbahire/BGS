@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 require_once '../includes/db.php';
 require_once '../includes/auth.php';
 require_once '../includes/functions.php';
@@ -72,7 +72,7 @@ renderHead('Generate Bill');
 
         <!-- Month selector -->
         <div class="card" style="position:sticky;top:80px">
-            <div class="card-header"><h3>📅 Select Month</h3></div>
+            <div class="card-header"><h3><?= svgIcon('month') ?> Select Month</h3></div>
             <div class="card-body">
                 <form method="GET">
                     <div class="form-group">
@@ -118,7 +118,7 @@ renderHead('Generate Bill');
         $my=date('F Y',mktime(0,0,0,$pm,1,$py));
         ?>
         <div class="card">
-            <div class="card-header"><h3>🧾 Bill Preview — <?= e($my) ?></h3></div>
+            <div class="card-header"><h3><?= svgIcon('receipt') ?> Bill Preview — <?= e($my) ?></h3></div>
             <div class="card-body">
                 <!-- Summary -->
                 <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem">
@@ -163,24 +163,24 @@ renderHead('Generate Bill');
                 </div>
 
                 <hr class="divider">
-                <div class="alert alert-warning">⚠️ Once submitted you cannot edit until HOD reviews it.</div>
+                <div class="alert alert-warning"><?= svgIcon('warning') ?> Once submitted you cannot edit until HOD reviews it.</div>
 
                 <form method="POST">
                     <input type="hidden" name="bill_month" value="<?= $pm ?>">
                     <input type="hidden" name="bill_year"  value="<?= $py ?>">
                     <button type="submit" class="btn btn-primary btn-lg"
                             onclick="return confirmAction('Submit bill for <?= e($my) ?> — <?= formatINR($total) ?>?')">
-                        📤 Submit to HOD — <?= formatINR($total) ?>
+                        <?= svgIcon('upload') ?> Submit to HOD — <?= formatINR($total) ?>
                     </button>
                 </form>
             </div>
         </div>
 
         <?php elseif($pm && !$preview): ?>
-        <div class="card"><div class="empty-state"><div class="icon">📭</div><h3>No unbilled lectures</h3><p>No entries for <?= date('F Y',mktime(0,0,0,$pm,1,$py)) ?> or all already billed.</p><a href="lectures.php" class="btn btn-primary" style="margin-top:1rem">Add Lectures</a></div></div>
+        <div class="card"><div class="empty-state"><div class="icon"><?= svgIcon('document') ?></div><h3>No unbilled lectures</h3><p>No entries for <?= date('F Y',mktime(0,0,0,$pm,1,$py)) ?> or all already billed.</p><a href="lectures.php" class="btn btn-primary" style="margin-top:1rem">Add Lectures</a></div></div>
 
         <?php else: ?>
-        <div class="card"><div class="empty-state"><div class="icon">👈</div><h3>Select a month</h3><p>Choose a month from the left panel to preview your bill.</p></div></div>
+        <div class="card"><div class="empty-state"><div class="icon"><?= svgIcon('calendar') ?></div><h3>Select a month</h3><p>Choose a month from the left panel to preview your bill.</p></div></div>
         <?php endif; ?>
 
     </div>

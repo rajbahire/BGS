@@ -155,12 +155,12 @@ renderHead('Classes');
                             <td><?= (int)$c['semester'] ?></td>
                             <td><?= (int)$c['subject_count'] ?></td>
                             <td><?= $c['is_active'] ? '<span class="badge badge-approved">Active</span>' : '<span class="badge badge-rejected">Inactive</span>' ?></td>
-                        <td><a href="?edit=<?= $c['id'] ?>" class="btn btn-outline btn-sm">✏️ Edit</a>
+                        <td><a href="?edit=<?= $c['id'] ?>" class="btn btn-outline btn-sm"><?= svgIcon('edit') ?> Edit</a>
                             <form method="POST" style="display:inline" onsubmit="return confirmAction('<?= $c['subject_count']>0 ? 'Class has subjects — it will be deactivated.' : 'Delete this class permanently?' ?>')">
                                 <input type="hidden" name="action" value="delete">
                                 <input type="hidden" name="id" value="<?= $c['id'] ?>">
                                 <input type="hidden" name="dept_filter" value="<?= $filterDept ?>">
-                                <button type="submit" class="btn btn-delete btn-sm">🗑 Delete</button>
+                                <button type="submit" class="btn btn-delete btn-sm"><?= svgIcon('delete') ?> Delete</button>
                             </form>
                         </td>
                         </tr>
@@ -169,14 +169,14 @@ renderHead('Classes');
                     </table>
                 </div>
                 <?php else: ?>
-                <div class="empty-state"><div class="icon">📚</div><h3>No classes found</h3><p>Add a class using the form.</p></div>
+                <div class="empty-state"><div class="icon"><?= svgIcon('classes') ?></div><h3>No classes found</h3><p>Add a class using the form.</p></div>
                 <?php endif; ?>
             </div>
         </div>
 
         <!-- Form -->
         <div class="card" style="position:sticky;top:80px">
-            <div class="card-header"><h3><?= $editRow ? '✏️ Edit Class' : '➕ Add Class' ?></h3></div>
+            <div class="card-header"><h3><?= $editRow ? svgIcon('edit') . ' Edit Class' : svgIcon('add') . ' Add Class' ?></h3></div>
             <div class="card-body">
                 <form method="POST">
                     <input type="hidden" name="action" value="<?= $editRow ? 'edit' : 'add' ?>">
@@ -271,7 +271,7 @@ renderHead('Classes');
                     <?php endif; ?>
 
                     <button type="submit" class="btn btn-primary" style="width:100%">
-                        <?= $editRow ? '💾 Update' : '➕ Add Class' ?>
+                        <?= $editRow ? svgIcon('save') . ' Update' : svgIcon('add') . ' Add Class' ?>
                     </button>
                     <?php if ($editRow): ?>
                     <a href="classes.php" class="btn btn-outline" style="width:100%;margin-top:8px;justify-content:center">Cancel</a>

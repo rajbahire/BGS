@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 require_once '../includes/db.php';
 require_once '../includes/auth.php';
 require_once '../includes/functions.php';
@@ -75,7 +75,7 @@ renderHead('Manual Bill');
 
     <div style="display:grid;grid-template-columns:300px 1fr;gap:1.5rem;align-items:start">
         <div class="card" style="position:sticky;top:80px">
-            <div class="card-header"><h3>🔍 Select</h3></div>
+            <div class="card-header"><h3><?= svgIcon('calendar') ?> Select</h3></div>
             <div class="card-body">
                 <form method="GET">
                     <div class="form-group">
@@ -121,7 +121,7 @@ renderHead('Manual Bill');
                 $my=date('F Y',mktime(0,0,0,$selMonth,1,$selYear));
             ?>
             <div class="card">
-                <div class="card-header"><h3>🧾 Preview — <?= e($my) ?> — <?= e($previewTeacher['name']) ?></h3></div>
+                <div class="card-header"><h3><?= svgIcon('receipt') ?> Preview — <?= e($my) ?> — <?= e($previewTeacher['name']) ?></h3></div>
                 <div class="card-body">
                     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem">
                         <div style="text-align:center;padding:.9rem;background:var(--primary-lt);border-radius:var(--radius)">
@@ -164,21 +164,21 @@ renderHead('Manual Bill');
                     </div>
 
                     <hr class="divider">
-                    <div class="alert alert-info">ℹ️ Bill will be created as <strong>Pending</strong> and appear in requests queue.</div>
+                    <div class="alert alert-info"><?= svgIcon('info') ?> Bill will be created as <strong>Pending</strong> and appear in requests queue.</div>
                     <form method="POST">
                         <input type="hidden" name="teacher_id" value="<?= $selTeacher ?>">
                         <input type="hidden" name="bill_month" value="<?= $selMonth ?>">
                         <input type="hidden" name="bill_year"  value="<?= $selYear ?>">
                         <button type="submit" class="btn btn-primary" onclick="return confirmAction('Create this bill?')">
-                            📤 Create Bill — <?= formatINR($total) ?>
+                            <?= svgIcon('upload') ?> Create Bill — <?= formatINR($total) ?>
                         </button>
                     </form>
                 </div>
             </div>
             <?php elseif($selTeacher && $selMonth && !$preview): ?>
-            <div class="card"><div class="empty-state"><div class="icon">📭</div><h3>No unbilled lectures</h3><p>No entries for <?= date('F Y',mktime(0,0,0,$selMonth,1,$selYear)) ?> that haven't been billed.</p></div></div>
+            <div class="card"><div class="empty-state"><div class="icon"><?= svgIcon('document') ?></div><h3>No unbilled lectures</h3><p>No entries for <?= date('F Y',mktime(0,0,0,$selMonth,1,$selYear)) ?> that haven't been billed.</p></div></div>
             <?php else: ?>
-            <div class="card"><div class="empty-state"><div class="icon">👈</div><h3>Select teacher and month</h3><p>Use the form on the left to preview.</p></div></div>
+            <div class="card"><div class="empty-state"><div class="icon"><?= svgIcon('calendar') ?></div><h3>Select teacher and month</h3><p>Use the form on the left to preview.</p></div></div>
             <?php endif; ?>
         </div>
     </div>

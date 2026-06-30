@@ -73,10 +73,10 @@ renderHead('Other Bills');
 
     <!-- Tab bar -->
     <div class="d-flex gap-8 flex-wrap mb-2">
-        <a href="?tab=list"             class="btn <?= $tab==='list'?'btn-primary':'btn-outline' ?> btn-sm">📋 All Other Bills</a>
-        <a href="?tab=create&type=practical"  class="btn <?= $tab==='create'&&$billType==='practical' ?'btn-primary':'btn-outline' ?> btn-sm">➕ Practical Exam</a>
-        <a href="?tab=create&type=earn_learn" class="btn <?= $tab==='create'&&$billType==='earn_learn'?'btn-primary':'btn-outline' ?> btn-sm">➕ Earn &amp; Learn</a>
-        <a href="?tab=create&type=seminar"    class="btn <?= $tab==='create'&&$billType==='seminar'   ?'btn-primary':'btn-outline' ?> btn-sm">➕ Seminar</a>
+        <a href="?tab=list"             class="btn <?= $tab==='list'?'btn-primary':'btn-outline' ?> btn-sm"><?= svgIcon('other-bills') ?> All Other Bills</a>
+        <a href="?tab=create&type=practical"  class="btn <?= $tab==='create'&&$billType==='practical' ?'btn-primary':'btn-outline' ?> btn-sm"><?= svgIcon('add') ?> Practical Exam</a>
+        <a href="?tab=create&type=earn_learn" class="btn <?= $tab==='create'&&$billType==='earn_learn'?'btn-primary':'btn-outline' ?> btn-sm"><?= svgIcon('add') ?> Earn &amp; Learn</a>
+        <a href="?tab=create&type=seminar"    class="btn <?= $tab==='create'&&$billType==='seminar'   ?'btn-primary':'btn-outline' ?> btn-sm"><?= svgIcon('add') ?> Seminar</a>
     </div>
 
     <?php if($tab==='list'): ?>
@@ -94,20 +94,20 @@ renderHead('Other Bills');
                     <td><?= e($b['claimant_name']) ?></td>
                     <td class="fw-600"><?= formatINR($b['total_amount']) ?></td>
                     <td class="text-sm text-muted"><?= fmtDate($b['bill_date']) ?></td>
-                    <td><a href="../pdf/other-bill.php?id=<?= $b['id'] ?>" class="btn btn-outline btn-sm" target="_blank">🖨 Print</a></td>
+                    <td><a href="../pdf/other-bill.php?id=<?= $b['id'] ?>" class="btn btn-outline btn-sm" target="_blank"><?= svgIcon('printer') ?> Print</a></td>
                 </tr>
                 <?php endforeach; ?>
                 </tbody>
             </table>
         </div>
         <?php else: ?>
-        <div class="empty-state"><div class="icon">📄</div><h3>No other bills yet</h3><p>Create a practical exam, earn &amp; learn, or seminar bill using the buttons above.</p></div>
+        <div class="empty-state"><div class="icon"><?= svgIcon('document') ?></div><h3>No other bills yet</h3><p>Create a practical exam, earn &amp; learn, or seminar bill using the buttons above.</p></div>
         <?php endif; ?>
     </div>
 
     <?php elseif($tab==='create'): ?>
     <div class="card">
-        <div class="card-header"><h3>➕ <?= e($typeLabels[$billType]??'Other Bill') ?></h3></div>
+        <div class="card-header"><h3><?= svgIcon('add') ?> <?= e($typeLabels[$billType]??'Other Bill') ?></h3></div>
         <div class="card-body">
             <form method="POST" action="other-bills.php?type=<?= e($billType) ?>">
                 <input type="hidden" name="bill_type" value="<?= e($billType) ?>">
@@ -179,12 +179,12 @@ renderHead('Other Bills');
                     <div class="form-group"><label>PAN</label><input type="text" name="pan" class="form-control"></div>
                 </div>
                 <?php else: ?>
-                <div class="alert alert-warning">⚠️ Unknown bill type. Please select from the tabs above.</div>
+                <div class="alert alert-warning"><?= svgIcon('warning') ?> Unknown bill type. Please select from the tabs above.</div>
                 <?php return; ?>
                 <?php endif; ?>
 
                 <hr class="divider">
-                <button type="submit" class="btn btn-primary">🖨 Generate &amp; Save Bill</button>
+                <button type="submit" class="btn btn-primary"><?= svgIcon('printer') ?> Generate &amp; Save Bill</button>
                 <a href="other-bills.php?tab=list" class="btn btn-outline">Cancel</a>
             </form>
         </div>

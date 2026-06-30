@@ -108,7 +108,7 @@ renderHead('My Lectures');
 
             <?php if($fm && ($tTotals['theory']+$tTotals['practical']+$tTotals['other']) > 0): ?>
             <div class="alert alert-info" style="margin-bottom:1rem">
-                📊 <strong><?= date('F',mktime(0,0,0,$fm,1)) ?> <?= $fy ?>:</strong>
+                <?= svgIcon('chart') ?> <strong><?= date('F',mktime(0,0,0,$fm,1)) ?> <?= $fy ?>:</strong>
                 Theory <?= number_format($tTotals['theory'],1) ?> hrs &nbsp;|&nbsp;
                 Practical <?= number_format($tTotals['practical'],1) ?> hrs &nbsp;|&nbsp;
                 Other <?= number_format($tTotals['other'],1) ?> hrs
@@ -138,7 +138,7 @@ renderHead('My Lectures');
                                     <input type="hidden" name="fm" value="<?= $fm ?>">
                                     <input type="hidden" name="fy" value="<?= $fy ?>">
                                     <button class="btn btn-outline btn-sm" style="color:var(--rejected);border-color:#FECACA"
-                                            onclick="return confirmAction('Delete this entry?')">🗑</button>
+                                            onclick="return confirmAction('Delete this entry?')"><?= svgIcon('delete') ?></button>
                                 </form>
                             </td>
                         </tr>
@@ -147,17 +147,17 @@ renderHead('My Lectures');
                     </table>
                 </div>
                 <?php else: ?>
-                <div class="empty-state"><div class="icon">📅</div><h3>No lectures found</h3><p>Add entries using the form.</p></div>
+                <div class="empty-state"><div class="icon"><?= svgIcon('calendar') ?></div><h3>No lectures found</h3><p>Add entries using the form.</p></div>
                 <?php endif; ?>
             </div>
         </div>
 
         <!-- Add Form -->
         <div class="card" style="position:sticky;top:80px">
-            <div class="card-header"><h3>➕ Add Lecture Entry</h3></div>
+            <div class="card-header"><h3><?= svgIcon('add') ?> Add Lecture Entry</h3></div>
             <div class="card-body">
                 <?php if(!$teacher['subject_id']): ?>
-                <div class="alert alert-warning">⚠️ No subject assigned. Please <a href="profile.php">update your profile</a> or ask HOD to assign a subject.</div>
+                <div class="alert alert-warning"><?= svgIcon('warning') ?> No subject assigned. Please <a href="profile.php">update your profile</a> or ask HOD to assign a subject.</div>
                 <?php else: ?>
                 <form method="POST">
                     <input type="hidden" name="action" value="add">
@@ -201,7 +201,7 @@ renderHead('My Lectures');
                         <textarea name="notes" class="form-control" rows="2" placeholder="Any remarks…"></textarea>
                     </div>
 
-                    <button type="submit" class="btn btn-primary" style="width:100%">➕ Add Entry</button>
+                    <button type="submit" class="btn btn-primary" style="width:100%"><?= svgIcon('add') ?> Add Entry</button>
                 </form>
                 <?php endif; ?>
             </div>

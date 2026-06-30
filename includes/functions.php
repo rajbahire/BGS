@@ -30,7 +30,7 @@ function getFlash(): string {
     if (empty($_SESSION['flash'])) return '';
     ['type' => $type, 'msg' => $msg] = $_SESSION['flash'];
     unset($_SESSION['flash']);
-    $icons = ['success'=>'✅','error'=>'❌','warning'=>'⚠️','info'=>'ℹ️'];
+    $icons = ['success'=>svgIcon('check'),'error'=>svgIcon('close'),'warning'=>svgIcon('warning'),'info'=>svgIcon('info')];
     $cls   = match($type) {
         'success' => 'alert-success',
         'error'   => 'alert-error',
@@ -123,7 +123,7 @@ function renderHead(string $title, int $depth = 1): void {
     <div class="navbar-brand">
         <img src="../assets/images/logo.png" alt="GCEA Logo" class="navbar-logo"
              onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <div class="navbar-logo-fallback" style="display:none">🎓</div>
+        <div class="navbar-logo-fallback" style="display:none"><?= svgIcon('dashboard') ?></div>
 
         <div class="navbar-titles">
             <span class="navbar-college-en">Government College of Engineering Aurangabad, Chhatrapati Sambhajinagar</span>
@@ -149,43 +149,63 @@ function renderFooter(int $depth = 1): void {
     <?php
 }
 
+// ── SVG icon loader ───────────────────────────────────────────
+function svgIcon(string $name): string {
+    $path = __DIR__ . '/../assets/svg/' . $name . '.svg';
+    if (!file_exists($path)) return '';
+    $svg = file_get_contents($path);
+
+    // Add class for CSS sizing control
+    $svg = preg_replace('/<svg\b/', '<svg class="icon"', $svg, 1);
+
+    // Remove hardcoded width/height — CSS controls size
+    $svg = preg_replace('/\s*width="[^"]*"/', '', $svg, 1);
+    $svg = preg_replace('/\s*height="[^"]*"/', '', $svg, 1);
+
+    // Replace hardcoded colors on shape elements with currentColor
+    $svg = preg_replace('/(<(?:path|circle|rect|ellipse|line|polyline|polygon|g)[^>]*)\bfill="#[0-9a-fA-F]{3,6}"/', '$1fill="currentColor"', $svg);
+    $svg = preg_replace('/(<(?:path|circle|rect|ellipse|line|polyline|polygon|g)[^>]*)\bstroke="#[0-9a-fA-F]{3,6}"/', '$1stroke="currentColor"', $svg);
+
+    return $svg;
+}
+
 // ── Sidebar renderer ─────────────────────────────────────────
 function renderSidebar(string $active, string $role, array $user): void {
     $navs = [
         'admin' => [
-            ['key'=>'dashboard',     'href'=>'dashboard.php',     'icon'=>'🏠', 'label'=>'Dashboard'],
-            ['key'=>'departments',   'href'=>'departments.php',   'icon'=>'🏛', 'label'=>'Departments'],
-            ['key'=>'classes',       'href'=>'classes.php',       'icon'=>'📚', 'label'=>'Classes'],
-            ['key'=>'subjects',      'href'=>'subjects.php',      'icon'=>'📖', 'label'=>'Subjects'],
-            ['key'=>'manage-hods',   'href'=>'manage-hods.php',   'icon'=>'👥', 'label'=>'Manage HODs'],
-            ['key'=>'fund-requests', 'href'=>'fund-requests.php', 'icon'=>'💰', 'label'=>'Fund Requests'],
-            ['key'=>'profile',       'href'=>'profile.php',       'icon'=>'👤', 'label'=>'Profile'],
+            ['key'=>'dashboard',     'href'=>'dashboard.php',     'icon'=>svgIcon('dashboard'), 'label'=>'Dashboard'],
+            ['key'=>'departments',   'href'=>'departments.php',   'icon'=>svgIcon('departments'), 'label'=>'Departments'],
+            ['key'=>'classes',       'href'=>'classes.php',       'icon'=>svgIcon('classes'), 'label'=>'Classes'],
+            ['key'=>'subjects',      'href'=>'subjects.php',      'icon'=>svgIcon('subjects'), 'label'=>'Subjects'],
+            ['key'=>'manage-hods',   'href'=>'manage-hods.php',   'icon'=>svgIcon('manage-hods'), 'label'=>'Manage HODs'],
+            ['key'=>'fund-requests', 'href'=>'fund-requests.php', 'icon'=>svgIcon('fund-requests'), 'label'=>'Fund Requests'],
+            ['key'=>'profile',       'href'=>'profile.php',       'icon'=>svgIcon('profile'), 'label'=>'Profile'],
         ],
         'hod' => [
-            ['key'=>'dashboard',     'href'=>'dashboard.php',     'icon'=>'🏠', 'label'=>'Dashboard'],
-            ['key'=>'requests',      'href'=>'requests.php',      'icon'=>'📥', 'label'=>'Pending Requests'],
-            ['key'=>'all-bills',     'href'=>'all-bills.php',     'icon'=>'📋', 'label'=>'All Bills'],
-            ['key'=>'manual-bill',   'href'=>'manual-bill.php',   'icon'=>'✏️', 'label'=>'Manual Bill'],
-            ['key'=>'other-bills',   'href'=>'other-bills.php',   'icon'=>'📄', 'label'=>'Other Bills'],
-            ['key'=>'timetable',     'href'=>'timetable.php',     'icon'=>'📅', 'label'=>'Time Table'],
-            ['key'=>'classes',       'href'=>'classes.php',       'icon'=>'📚', 'label'=>'Classes'],
-            ['key'=>'subjects',      'href'=>'subjects.php',      'icon'=>'📖', 'label'=>'Subjects'],
-            ['key'=>'manage-users',  'href'=>'manage-users.php',  'icon'=>'👨‍🏫', 'label'=>'Manage Users'],
-            ['key'=>'profile',       'href'=>'profile.php',       'icon'=>'👤', 'label'=>'Profile'],
+            ['key'=>'dashboard',     'href'=>'dashboard.php',     'icon'=>svgIcon('dashboard'), 'label'=>'Dashboard'],
+            ['key'=>'requests',      'href'=>'requests.php',      'icon'=>svgIcon('fund-requests'), 'label'=>'Pending Requests'],
+            ['key'=>'all-bills',     'href'=>'all-bills.php',     'icon'=>svgIcon('all-bills'), 'label'=>'All Bills'],
+            ['key'=>'manual-bill',   'href'=>'manual-bill.php',   'icon'=>svgIcon('manual-bill'), 'label'=>'Manual Bill'],
+            ['key'=>'other-bills',   'href'=>'other-bills.php',   'icon'=>svgIcon('other-bills'), 'label'=>'Other Bills'],
+            ['key'=>'timetable',     'href'=>'timetable.php',     'icon'=>svgIcon('timetable'), 'label'=>'Time Table'],
+            ['key'=>'classes',       'href'=>'classes.php',       'icon'=>svgIcon('classes'), 'label'=>'Classes'],
+            ['key'=>'subjects',      'href'=>'subjects.php',      'icon'=>svgIcon('subjects'), 'label'=>'Subjects'],
+            ['key'=>'manage-users',  'href'=>'manage-users.php',  'icon'=>svgIcon('manage-users'), 'label'=>'Manage Users'],
+            ['key'=>'profile',       'href'=>'profile.php',       'icon'=>svgIcon('profile'), 'label'=>'Profile'],
         ],
         'teacher' => [
-            ['key'=>'dashboard',     'href'=>'dashboard.php',     'icon'=>'🏠', 'label'=>'Dashboard'],
-            ['key'=>'lectures',      'href'=>'lectures.php',      'icon'=>'📅', 'label'=>'My Lectures'],
-            ['key'=>'generate-bill', 'href'=>'generate-bill.php', 'icon'=>'🧾', 'label'=>'Generate Bill'],
-            ['key'=>'my-bills',      'href'=>'my-bills.php',      'icon'=>'📋', 'label'=>'My Bills'],
-            ['key'=>'profile',       'href'=>'profile.php',       'icon'=>'👤', 'label'=>'Profile'],
+            ['key'=>'dashboard',     'href'=>'dashboard.php',     'icon'=>svgIcon('dashboard'), 'label'=>'Dashboard'],
+            ['key'=>'lectures',      'href'=>'lectures.php',      'icon'=>svgIcon('lectures'), 'label'=>'My Lectures'],
+            ['key'=>'generate-bill', 'href'=>'generate-bill.php', 'icon'=>svgIcon('generate-bill'), 'label'=>'Generate Bill'],
+            ['key'=>'my-bills',      'href'=>'my-bills.php',      'icon'=>svgIcon('all-bills'), 'label'=>'My Bills'],
+            ['key'=>'profile',       'href'=>'profile.php',       'icon'=>svgIcon('profile'), 'label'=>'Profile'],
         ],
         'student' => [
-            ['key'=>'dashboard',     'href'=>'dashboard.php',     'icon'=>'🏠', 'label'=>'Dashboard'],
-            ['key'=>'add-work',      'href'=>'add-work.php',      'icon'=>'➕', 'label'=>'Add Work'],
-            ['key'=>'generate-bill', 'href'=>'generate-bill.php', 'icon'=>'🧾', 'label'=>'Generate Bill'],
-            ['key'=>'my-bills',      'href'=>'my-bills.php',      'icon'=>'📋', 'label'=>'My Bills'],
-            ['key'=>'profile',       'href'=>'profile.php',       'icon'=>'👤', 'label'=>'Profile'],
+            ['key'=>'dashboard',     'href'=>'dashboard.php',     'icon'=>svgIcon('dashboard'), 'label'=>'Dashboard'],
+            ['key'=>'add-work',      'href'=>'add-work.php',      'icon'=>svgIcon('work'), 'label'=>'Add Work'],
+            ['key'=>'generate-bill', 'href'=>'generate-bill.php', 'icon'=>svgIcon('generate-bill'), 'label'=>'Generate Bill'],
+            ['key'=>'my-bills',      'href'=>'my-bills.php',      'icon'=>svgIcon('all-bills'), 'label'=>'My Bills'],
+            ['key'=>'profile',       'href'=>'profile.php',       'icon'=>svgIcon('profile'), 'label'=>'Profile'],
         ],
     ];
 
@@ -223,7 +243,7 @@ function renderSidebar(string $active, string $role, array $user): void {
         <div class="sidebar-footer">
             <a href="../logout.php" class="btn-logout"
                onclick="return confirmAction('Sign out of your account?')">
-                🚪 Sign Out
+                <?= svgIcon('logout') ?> Sign Out
             </a>
         </div>
     </aside>

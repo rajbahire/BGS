@@ -68,8 +68,9 @@ renderHead('HOD Profile');
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;align-items:start">
         <!-- Profile -->
+        <div style="display:flex;flex-direction:column;gap:1.5rem">
         <div class="card">
-            <div class="card-header"><h3>👤 Personal Information</h3></div>
+            <div class="card-header"><h3><?= svgIcon('profile') ?> Personal Information</h3></div>
             <div class="card-body">
                 <div style="display:flex;align-items:center;gap:14px;padding:1rem;background:var(--bg);border-radius:var(--radius);margin-bottom:1.2rem">
                     <?php if($row['profile_photo']): ?>
@@ -89,42 +90,47 @@ renderHead('HOD Profile');
                     <div class="form-group"><label>Email</label><input type="email" class="form-control" value="<?= e($row['email']) ?>" disabled></div>
                     <div class="form-group"><label>Department</label><input type="text" class="form-control" value="<?= e($deptName) ?>" disabled></div>
                     <div class="form-group"><label>Phone</label><input type="text" name="phone" class="form-control" value="<?= e($row['phone']??'') ?>"></div>
-                    <button type="submit" class="btn btn-primary">💾 Save Changes</button>
-                </form>
-                <hr class="divider">
-                <!-- Photo upload -->
-                <form method="POST" enctype="multipart/form-data">
-                    <input type="hidden" name="action" value="upload_photo">
-                    <div class="form-group"><label>Update Profile Photo</label><input type="file" name="photo" class="form-control" accept=".jpg,.jpeg,.png"></div>
-                    <button type="submit" class="btn btn-primary">📷 Upload Photo</button>
+                    <button type="submit" class="btn btn-primary"><?= svgIcon('save') ?> Save Changes</button>
                 </form>
             </div>
         </div>
 
+        <div class="card">
+            <div class="card-header"><h3><?= svgIcon('upload-photo') ?> Update Profile Photo</h3></div>
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    <input type="hidden" name="action" value="upload_photo">
+                    <div class="form-group"><label>Select Photo (JPG, JPEG, PNG)</label><input type="file" name="photo" class="form-control" accept=".jpg,.jpeg,.png"></div>
+                    <button type="submit" class="btn btn-primary"><?= svgIcon('upload-photo') ?> Upload Photo</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
         <div style="display:flex;flex-direction:column;gap:1.5rem">
             <!-- Password -->
             <div class="card">
-                <div class="card-header"><h3>🔒 Change Password</h3></div>
+                <div class="card-header"><h3><?= svgIcon('key') ?> Change Password</h3></div>
                 <div class="card-body">
                     <form method="POST">
                         <input type="hidden" name="action" value="password">
                         <div class="form-group"><label>Current Password <span style="color:red">*</span></label><input type="password" name="current_password" class="form-control" required></div>
                         <div class="form-group"><label>New Password <span style="color:red">*</span></label><input type="password" name="new_password" class="form-control" required placeholder="Min. 6 characters"></div>
                         <div class="form-group"><label>Confirm New Password <span style="color:red">*</span></label><input type="password" name="confirm_password" class="form-control" required></div>
-                        <button type="submit" class="btn btn-primary">🔑 Change Password</button>
+                        <button type="submit" class="btn btn-primary"><?= svgIcon('reset') ?> Change Password</button>
                     </form>
                 </div>
             </div>
 
             <!-- Fund Request -->
             <div class="card">
-                <div class="card-header"><h3>💰 Request Funds from Admin</h3></div>
+                <div class="card-header"><h3><?= svgIcon('fund-requests') ?> Request Funds from Admin</h3></div>
                 <div class="card-body">
                     <form method="POST">
                         <input type="hidden" name="action" value="fund_request">
                         <div class="form-group"><label>Amount (₹) <span style="color:red">*</span></label><input type="number" name="amount" class="form-control" step="0.01" min="1" placeholder="50000"></div>
                         <div class="form-group"><label>Purpose <span style="color:red">*</span></label><textarea name="purpose" class="form-control" rows="3" placeholder="Explain the purpose of this fund request…" required></textarea></div>
-                        <button type="submit" class="btn btn-primary" onclick="return confirmAction('Submit this fund request?')">📤 Submit Request</button>
+                        <button type="submit" class="btn btn-primary" onclick="return confirmAction('Submit this fund request?')"><?= svgIcon('upload') ?> Submit Request</button>
                     </form>
                 </div>
             </div>

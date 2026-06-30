@@ -26,10 +26,10 @@ renderHead('My Bills');
 
     <div class="d-flex gap-8 flex-wrap mb-2">
         <a href="my-bills.php"     class="btn <?= !$fStatus         ?'btn-primary':'btn-outline' ?> btn-sm">All</a>
-        <a href="?status=pending"  class="btn <?= $fStatus==='pending'  ?'btn-primary':'btn-outline' ?> btn-sm">⏳ Pending</a>
-        <a href="?status=approved" class="btn <?= $fStatus==='approved' ?'btn-primary':'btn-outline' ?> btn-sm">✅ Approved</a>
-        <a href="?status=rejected" class="btn <?= $fStatus==='rejected' ?'btn-primary':'btn-outline' ?> btn-sm">❌ Rejected</a>
-        <a href="generate-bill.php" class="btn btn-primary btn-sm" style="margin-left:auto">➕ New Bill</a>
+        <a href="?status=pending"  class="btn <?= $fStatus==='pending'  ?'btn-primary':'btn-outline' ?> btn-sm"><?= svgIcon('pending') ?> Pending</a>
+        <a href="?status=approved" class="btn <?= $fStatus==='approved' ?'btn-primary':'btn-outline' ?> btn-sm"><?= svgIcon('approved') ?> Approved</a>
+        <a href="?status=rejected" class="btn <?= $fStatus==='rejected' ?'btn-primary':'btn-outline' ?> btn-sm"><?= svgIcon('rejected') ?> Rejected</a>
+        <a href="generate-bill.php" class="btn btn-primary btn-sm" style="margin-left:auto"><?= svgIcon('add') ?> New Bill</a>
     </div>
 
     <div class="card">
@@ -65,7 +65,7 @@ renderHead('My Bills');
         </div>
         <?php else: ?>
         <div class="empty-state">
-            <div class="icon">📋</div>
+            <div class="icon"><?= svgIcon('list') ?></div>
             <h3>No bills found</h3>
             <p><?= $fStatus ? "No $fStatus bills." : 'You have not submitted any bills yet.' ?></p>
             <a href="generate-bill.php" class="btn btn-primary" style="margin-top:1rem">Generate First Bill</a>

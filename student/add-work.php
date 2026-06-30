@@ -97,7 +97,7 @@ renderHead('Add Work');
             </div>
 
             <?php if($fm): ?>
-            <div class="alert alert-info mb-2">📊 Total for <?= date('F',mktime(0,0,0,$fm,1)) ?> <?= $fy ?>: <strong><?= number_format($totalHrs,1) ?> hrs</strong></div>
+            <div class="alert alert-info mb-2"><?= svgIcon('chart') ?> Total for <?= date('F',mktime(0,0,0,$fm,1)) ?> <?= $fy ?>: <strong><?= number_format($totalHrs,1) ?> hrs</strong></div>
             <?php endif; ?>
 
             <div class="card">
@@ -119,7 +119,7 @@ renderHead('Add Work');
                                     <input type="hidden" name="work_id" value="<?= $w['id'] ?>">
                                     <input type="hidden" name="fm" value="<?= $fm ?>">
                                     <input type="hidden" name="fy" value="<?= $fy ?>">
-                                    <button class="btn btn-outline btn-sm" style="color:var(--rejected);border-color:#FECACA" onclick="return confirmAction('Delete this entry?')">🗑</button>
+                                    <button class="btn btn-outline btn-sm" style="color:var(--rejected);border-color:#FECACA" onclick="return confirmAction('Delete this entry?')"><?= svgIcon('delete') ?></button>
                                 </form>
                             </td>
                         </tr>
@@ -128,13 +128,13 @@ renderHead('Add Work');
                     </table>
                 </div>
                 <?php else: ?>
-                <div class="empty-state"><div class="icon">🕐</div><h3>No work entries found</h3></div>
+            <div class="empty-state"><div class="icon"><?= svgIcon('pending') ?></div><h3>No work entries found</h3></div>
                 <?php endif; ?>
             </div>
         </div>
 
         <div class="card" style="position:sticky;top:80px">
-            <div class="card-header"><h3>➕ Add Work Entry</h3></div>
+            <div class="card-header"><h3><?= svgIcon('add') ?> Add Work Entry</h3></div>
             <div class="card-body">
                 <form method="POST">
                     <input type="hidden" name="action" value="add">
@@ -143,7 +143,7 @@ renderHead('Add Work');
                     <div class="form-group"><label>Date <span style="color:red">*</span></label><input type="date" name="work_date" class="form-control" data-today required max="<?= date('Y-m-d') ?>"></div>
                     <div class="form-group"><label>Hours <span style="color:red">*</span></label><input type="number" name="hours" class="form-control" step="0.5" min="0.5" max="12" value="2" required></div>
                     <div class="form-group"><label>Description (optional)</label><textarea name="description" class="form-control" rows="2" placeholder="What work did you do?"></textarea></div>
-                    <button type="submit" class="btn btn-primary" style="width:100%">➕ Add Entry</button>
+                    <button type="submit" class="btn btn-primary" style="width:100%"><?= svgIcon('add') ?> Add Entry</button>
                 </form>
             </div>
         </div>
