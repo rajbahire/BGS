@@ -91,7 +91,7 @@ renderHead('HOD Dashboard');
 
         <div class="card">
             <div class="card-header"><h3>Recent Activity</h3></div>
-            <?php $icons=['login'=>svgIcon('login'),'logout'=>svgIcon('logout'),'submit_bill'=>svgIcon('upload'),'approve_bill'=>svgIcon('approved'),'reject_bill'=>svgIcon('rejected'),'add_lecture'=>svgIcon('calendar'),'add_teacher'=>svgIcon('add')]; ?>
+            <?php $icons=['login'=>svgIcon('login'),'logout'=>svgIcon('logout'),'submit_bill'=>svgIcon('upload'),'submit_student_bill'=>svgIcon('upload'),'approve_bill'=>svgIcon('approved'),'reject_bill'=>svgIcon('rejected'),'add_lecture'=>svgIcon('calendar'),'add_teacher'=>svgIcon('add-user'),'add_student'=>svgIcon('add-user'),'add_subject'=>svgIcon('subjects'),'edit_subject'=>svgIcon('edit'),'delete_subject'=>svgIcon('delete'),'add_class'=>svgIcon('classes'),'edit_class'=>svgIcon('edit'),'delete_class'=>svgIcon('delete'),'edit_user'=>svgIcon('edit'),'deactivate_user'=>svgIcon('delete'),'activate_user'=>svgIcon('approved'),'delete_user'=>svgIcon('delete'),'manual_bill'=>svgIcon('manual-bill'),'fund_request'=>svgIcon('fund-requests'),'create_other_bill'=>svgIcon('other-bills'),'add_timetable'=>svgIcon('timetable'),'approve_fund'=>svgIcon('approved'),'reject_fund'=>svgIcon('rejected')]; ?>
             <?php if($recentActivity): ?>
             <?php foreach($recentActivity as $a): $icon=$icons[$a['action']]??svgIcon('list'); ?>
             <div style="display:flex;gap:10px;align-items:flex-start;padding:9px 1.3rem;border-bottom:1px solid var(--border)">

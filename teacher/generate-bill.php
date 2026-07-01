@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 require_once '../includes/db.php';
 require_once '../includes/auth.php';
 require_once '../includes/functions.php';
@@ -7,6 +7,10 @@ $user = currentUser();
 $uid  = $user['id'];
 
 $teacher = $pdo->prepare("SELECT * FROM users WHERE id=?"); $teacher->execute([$uid]); $teacher=$teacher->fetch();
+
+// Which hour types apply to this teacher
+$showTheory    = in_array($teacher['teacher_mode'], ['theory',    'theory & practical']);
+$showPractical = in_array($teacher['teacher_mode'], ['practical', 'theory & practical']);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $month = (int)$_POST['bill_month'];
@@ -121,17 +125,24 @@ renderHead('Generate Bill');
             <div class="card-header"><h3><?= svgIcon('receipt') ?> Bill Preview — <?= e($my) ?></h3></div>
             <div class="card-body">
                 <!-- Summary -->
-                <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem">
+                <?php
+                $colCount = 1 + ($showTheory ? 1 : 0) + ($showPractical ? 1 : 0) + 1; // other + total
+                ?>
+                <div style="display:grid;grid-template-columns:repeat(<?= $colCount ?>,1fr);gap:1rem;margin-bottom:1.5rem">
+                    <?php if($showTheory): ?>
                     <div style="text-align:center;padding:.9rem;background:var(--primary-lt);border-radius:var(--radius)">
                         <div class="text-xs text-muted" style="text-transform:uppercase;letter-spacing:.05em">Theory Hrs</div>
                         <div style="font-size:1.4rem;font-weight:600;color:var(--primary)"><?= number_format($pTotals['t'],1) ?></div>
                         <div class="text-xs" style="color:var(--primary)">@ <?= formatINR($teacher['rate_theory']) ?>/hr = <?= formatINR($tAmt) ?></div>
                     </div>
+                    <?php endif; ?>
+                    <?php if($showPractical): ?>
                     <div style="text-align:center;padding:.9rem;background:#F0FDFA;border-radius:var(--radius)">
                         <div class="text-xs text-muted" style="text-transform:uppercase;letter-spacing:.05em">Practical Hrs</div>
                         <div style="font-size:1.4rem;font-weight:600;color:#0F766E"><?= number_format($pTotals['p'],1) ?></div>
                         <div class="text-xs" style="color:#0F766E">@ <?= formatINR($teacher['rate_practical']) ?>/hr = <?= formatINR($pAmt) ?></div>
                     </div>
+                    <?php endif; ?>
                     <div style="text-align:center;padding:.9rem;background:#F5F3FF;border-radius:var(--radius)">
                         <div class="text-xs text-muted" style="text-transform:uppercase;letter-spacing:.05em">Other Hrs</div>
                         <div style="font-size:1.4rem;font-weight:600;color:#6D28D9"><?= number_format($pTotals['o'],1) ?></div>
@@ -146,15 +157,15 @@ renderHead('Generate Bill');
                 <!-- Lecture table -->
                 <div class="table-wrap">
                     <table>
-                        <thead><tr><th>#</th><th>Date</th><th>Subject</th><th>Theory Hrs</th><th>Practical Hrs</th><th>Other Hrs</th></tr></thead>
+                        <thead><tr><th>#</th><th>Date</th><th>Subject</th><?php if($showTheory): ?><th>Theory Hrs</th><?php endif; ?><?php if($showPractical): ?><th>Practical Hrs</th><?php endif; ?><th>Other Hrs</th></tr></thead>
                         <tbody>
                         <?php foreach($preview as $i=>$l): ?>
                         <tr>
                             <td class="text-muted"><?= $i+1 ?></td>
                             <td><?= fmtDate($l['lecture_date']) ?></td>
                             <td><?= e($l['subject_name']??'—') ?> <?= $l['subject_code']?'<span class="badge badge-expert" style="font-size:.66rem">'.e($l['subject_code']).'</span>':'' ?></td>
-                            <td><?= number_format($l['theory_hours'],1) ?></td>
-                            <td><?= number_format($l['practical_hours'],1) ?></td>
+                            <?php if($showTheory): ?><td><?= number_format($l['theory_hours'],1) ?></td><?php endif; ?>
+                            <?php if($showPractical): ?><td><?= number_format($l['practical_hours'],1) ?></td><?php endif; ?>
                             <td><?= number_format($l['other_hours'],1) ?></td>
                         </tr>
                         <?php endforeach; ?>

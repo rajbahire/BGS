@@ -61,7 +61,7 @@ body{font-family:"Times New Roman",Times,serif;color:#000;background:#ccc}
 .pbar button{background:#fff;color:#1a3a6e;border:0;border-radius:4px;padding:6px 16px;font-weight:700;cursor:pointer}
 .pbar a{color:rgba(255,255,255,.78);text-decoration:none;margin-left:auto}
 .pbar .bill-ref{font-size:11px;opacity:.8}
-svg.icon{width:18px;height:18px;display:inline-block;vertical-align:middle;flex-shrink:0}
+.pbar button svg{width:16px;height:16px;display:inline-block;vertical-align:middle;flex-shrink:0;margin-right:4px}
 .page{width:210mm;min-height:297mm;background:#fff;margin:0 auto 14px;padding:12mm 14mm;page-break-after:always;position:relative}
 @media screen{body{padding-top:50px}.page{box-shadow:0 2px 10px rgba(0,0,0,.3)}}
 @media print{body{background:#fff;padding-top:0}.pbar{display:none!important}.page{box-shadow:none;margin:0;break-after:page}}

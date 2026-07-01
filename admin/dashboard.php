@@ -130,9 +130,15 @@ renderHead('Admin Dashboard');
             <?php if ($activity): ?>
             <div>
                 <?php
-                $icons = ['login'=>svgIcon('login'),'logout'=>svgIcon('logout'),'submit_bill'=>svgIcon('upload'),
-                          'approve_bill'=>svgIcon('approved'),'reject_bill'=>svgIcon('rejected'),'create_other_bill'=>svgIcon('document'),
-                          'add_lecture'=>svgIcon('calendar'),'add_teacher'=>svgIcon('add'),'approve_fund'=>svgIcon('fund-requests')];
+                $icons = ['login'=>svgIcon('login'),'logout'=>svgIcon('logout'),'submit_bill'=>svgIcon('upload'),'submit_student_bill'=>svgIcon('upload'),
+                          'approve_bill'=>svgIcon('approved'),'reject_bill'=>svgIcon('rejected'),'create_other_bill'=>svgIcon('other-bills'),
+                          'add_lecture'=>svgIcon('calendar'),'add_teacher'=>svgIcon('add-user'),'add_hod'=>svgIcon('add-user'),'add_student'=>svgIcon('add-user'),
+                          'edit_hod'=>svgIcon('edit'),'deactivate_hod'=>svgIcon('delete'),'delete_hod'=>svgIcon('delete'),'activate_hod'=>svgIcon('approved'),
+                          'add_subject'=>svgIcon('subjects'),'edit_subject'=>svgIcon('edit'),'delete_subject'=>svgIcon('delete'),
+                          'add_class'=>svgIcon('classes'),'edit_class'=>svgIcon('edit'),'delete_class'=>svgIcon('delete'),
+                          'add_department'=>svgIcon('departments'),'edit_department'=>svgIcon('edit'),'delete_department'=>svgIcon('delete'),
+                          'approve_fund'=>svgIcon('approved'),'reject_fund'=>svgIcon('rejected'),
+                          'add_work'=>svgIcon('add-work')];
                 foreach ($activity as $a):
                     $icon = $icons[$a['action']] ?? svgIcon('list');
                 ?>

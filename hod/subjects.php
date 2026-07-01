@@ -309,8 +309,9 @@ renderHead('HOD — Subjects');
 
                     <div class="form-group">
                         <label>Mode <span style="color:red">*</span></label>
-                        <select name="mode" class="form-control">
-                            <option value="theory"    <?= ($editRow['mode'] ?? 'theory') === 'theory'    ? 'selected' : '' ?>>Theory</option>
+                        <select name="mode" class="form-control" required>
+                            <option value="">— Select Mode —</option>
+                            <option value="theory"    <?= ($editRow['mode'] ?? '') === 'theory'    ? 'selected' : '' ?>>Theory</option>
                             <option value="practical" <?= ($editRow['mode'] ?? '') === 'practical' ? 'selected' : '' ?>>Practical</option>
                             <option value="theory & practical" <?= ($editRow['mode'] ?? '') === 'theory & practical' ? 'selected' : '' ?>>Theory &amp; Practical</option>
                         </select>

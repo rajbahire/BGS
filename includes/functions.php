@@ -74,7 +74,7 @@ function modeBadge(string $mode): string {
     $map = [
         'theory'    => ['badge-theory',    'Theory'],
         'practical' => ['badge-practical', 'Practical'],
-        'both'      => ['badge-both',      'Theory & Practical'],
+        'theory & practical' => ['badge-both', 'Theory &amp; Practical'],
     ];
     [$cls, $label] = $map[$mode] ?? ['badge-theory', ucfirst($mode)];
     return '<span class="badge ' . $cls . '">' . $label . '</span>';

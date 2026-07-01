@@ -71,6 +71,24 @@ $isSection3 = ($type === 'adjunct');                                // Adjunct C
 
 function h($s){ return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
 function n($v){ return number_format((float)$v, 2); }
+function amountWords(float $number): string {
+    $number = (int)round($number);
+    if ($number === 0) return 'Zero Rupees Only';
+    $words = [0=>'',1=>'One',2=>'Two',3=>'Three',4=>'Four',5=>'Five',6=>'Six',7=>'Seven',8=>'Eight',9=>'Nine',10=>'Ten',
+              11=>'Eleven',12=>'Twelve',13=>'Thirteen',14=>'Fourteen',15=>'Fifteen',16=>'Sixteen',17=>'Seventeen',18=>'Eighteen',
+              19=>'Nineteen',20=>'Twenty',30=>'Thirty',40=>'Forty',50=>'Fifty',60=>'Sixty',70=>'Seventy',80=>'Eighty',90=>'Ninety'];
+    $under100  = function($n) use ($words){ return $n<21 ? $words[$n] : trim($words[((int)($n/10))*10].' '.$words[$n%10]); };
+    $under1000 = function($n) use ($under100,$words){ return $n<100 ? $under100($n) : trim($words[(int)($n/100)].' Hundred '.$under100($n%100)); };
+    $parts=[];
+    $cr=intdiv($number,10000000); $number%=10000000;
+    $lk=intdiv($number,100000);   $number%=100000;
+    $th=intdiv($number,1000);     $number%=1000;
+    if($cr) $parts[]=$under1000($cr).' Crore';
+    if($lk) $parts[]=$under1000($lk).' Lakh';
+    if($th) $parts[]=$under1000($th).' Thousand';
+    if($number) $parts[]=$under1000($number);
+    return trim(implode(' ',$parts)).' Rupees Only';
+}
 function cross(){
     return '<div style="position:absolute;inset:0;pointer-events:none;z-index:8;overflow:hidden">'
           .'<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" preserveAspectRatio="none" '
@@ -91,8 +109,8 @@ html{font-size:9.5pt}
 body{font-family:'Times New Roman',Times,serif;color:#000;background:#ccc}
 .pbar{position:fixed;top:0;left:0;right:0;z-index:999;background:#1a3a6e;color:#fff;display:flex;align-items:center;gap:12px;padding:9px 18px;font-family:Arial,sans-serif;font-size:12px}
 .pbar button{background:#fff;color:#1a3a6e;border:none;border-radius:4px;padding:6px 16px;font-weight:700;font-size:12px;cursor:pointer}
+.pbar button svg{width:16px;height:16px;display:inline-block;vertical-align:middle;flex-shrink:0;margin-right:4px}
 .pbar a{color:rgba(255,255,255,.7);text-decoration:none;margin-left:auto}
-svg.icon{width:18px;height:18px;display:inline-block;vertical-align:middle;flex-shrink:0}
 .page{width:210mm;min-height:297mm;padding:13mm 14mm 12mm;margin:0 auto 14px;background:#fff;page-break-after:always;position:relative}
 @media screen{body{padding-top:50px}.page{box-shadow:0 2px 10px rgba(0,0,0,.3)}}
 @media print{.pbar{display:none!important}body{background:#fff;padding-top:0}.page{box-shadow:none;margin:0}}
@@ -117,9 +135,9 @@ th,td{border:1px solid #000;padding:1.5mm 2mm;vertical-align:top}
 .cpara{font-size:9.5pt;text-align:justify;line-height:1.7;margin-bottom:4mm}
 .bbox{border:1.5px solid #000;padding:3mm 4mm;margin:4mm 0;font-size:9.5pt;line-height:2}
 .bbox h3{font-size:10pt;font-weight:bold;text-align:center;margin-bottom:2mm}
-.brow{display:flex;gap:16mm}
-.sgg{display:grid;grid-template-columns:1fr 1fr;gap:8mm;font-size:9.5pt;line-height:1.9;margin-top:8mm}
-.sr{text-align:right}
+.brow{display:flex;}
+.sgg{display:grid;grid-template-columns:1fr 1fr;gap:50mm;font-size:9.5pt;line-height:1.9;margin-top:8mm}
+.sr{text-align:left}
 .prin{text-align:center;margin-top:16mm;font-size:9.5pt;line-height:1.9}
 </style>
 </head>
@@ -148,12 +166,12 @@ th,td{border:1px solid #000;padding:1.5mm 2mm;vertical-align:top}
   </p>
 
   <div class="binfo">
-    <div><span class="b">Name of the Faculty:</span> <span class="fl" style="min-width:90mm">&nbsp;<?= h($bill['tname']) ?>&nbsp;</span></div>
-    <div><span class="b">Department:</span> <span class="fl" style="min-width:60mm">&nbsp;<?= h($bill['dept_name']??'') ?>&nbsp;</span>
-         &nbsp;<span class="b">Subject:</span> <span class="fl" style="min-width:30mm">&nbsp;<?= h($bill['subject_code']??'') ?>&nbsp;</span></div>
+    <div><span class="b">Name of the Faculty:</span> <span class="fl" style="min-width:151mm">&nbsp;<?= h($bill['tname']) ?>&nbsp;</span></div>
+    <div><span class="b">Department:</span> <span class="fl" style="min-width:80mm;margin-left: 44px;">&nbsp;<?= h($bill['dept_name']??'') ?>&nbsp;</span>
+         &nbsp;<span class="b">Subject:</span> <span class="fl" style="min-width:56mm">&nbsp;<?= h($bill['subject_name']??'') ?>&nbsp;</span></div>
     <div><span class="b">Appointment order number:</span>
-      <span class="fl" style="min-width:50mm">&nbsp;<?= h($bill['appointment_order_no']??'') ?>&nbsp;</span>
-      &nbsp;<span class="b">Type:</span> <span class="fl" style="min-width:30mm">&nbsp;<?= h(ucwords(str_replace('_',' ',$type))) ?>&nbsp;</span>
+      <span class="fl" style="min-width:69mm">&nbsp;<?= h($bill['appointment_order_no']??'') ?>&nbsp;</span>
+      &nbsp;<span class="b">Type:</span> <span class="fl" style="min-width: 56mm;margin-left: 4mm;">&nbsp;<?= h(ucwords(str_replace('_',' ',$type))) ?>&nbsp;</span>
     </div>
   </div>
 
@@ -172,8 +190,8 @@ th,td{border:1px solid #000;padding:1.5mm 2mm;vertical-align:top}
           <td class="ac"><?= $isSection1 ? n($pHrs) : '' ?></td></tr>
       <tr><td>c) Total Other Hours in the month</td>
           <td class="ac"><?= $isSection1 ? n($oHrs) : '' ?></td></tr>
-      <tr><td class="tb">Bill claimed (Theory + Practical + Other)</td>
-          <td class="ac tb">Rs.&nbsp;<?= $isSection1 ? n($total) : '' ?></td></tr>
+      <tr><td class="tb">Bill claimed <?php if($isSection1 && $total > 0): ?>(<?= amountWords($total) ?>)</span><?php endif; ?></td>
+           <td class="ac tb">Rs.&nbsp;<?= $isSection1 ? n($total) : '' ?></td></tr>
     </table>
   </div>
 
@@ -189,9 +207,9 @@ th,td{border:1px solid #000;padding:1.5mm 2mm;vertical-align:top}
       <tr><td>Subject / Course</td>
           <td class="ac"><?= $isSection2 ? h(($bill['subject_name']??'').' ('.($bill['subject_code']??'').')') : '' ?></td></tr>
       <tr><td>Total no. of hours in the month (details as per Annexure I attached)</td><td class="ac"></td></tr>
-      <tr><td style="padding-left:8mm">1.&nbsp; Theory and Tutorials</td><td class="ac">1.&nbsp;<?= $isSection2 ? n($tHrs).' hrs' : '' ?></td></tr>
-      <tr><td style="padding-left:8mm">2.&nbsp; Practical / Project</td><td class="ac">2.&nbsp;<?= $isSection2 ? n($pHrs).' hrs' : '' ?></td></tr>
-      <tr><td style="padding-left:8mm">3.&nbsp; Other works</td><td class="ac">3.&nbsp;<?= $isSection2 ? n($oHrs).' hrs' : '' ?></td></tr>
+      <tr><td style="padding-left:8mm">1.&nbsp; Theory and Tutorials</td><td class="ac">&nbsp;<?= $isSection2 ? n($tHrs).' hrs' : '' ?></td></tr>
+      <tr><td style="padding-left:8mm">2.&nbsp; Practical / Project</td><td class="ac">&nbsp;<?= $isSection2 ? n($pHrs).' hrs' : '' ?></td></tr>
+      <tr><td style="padding-left:8mm">3.&nbsp; Other works</td><td class="ac">&nbsp;<?= $isSection2 ? n($oHrs).' hrs' : '' ?></td></tr>
       <tr><td>Bill claimed for-</td><td class="ac"></td></tr>
       <tr>
         <td style="padding-left:8mm">a.&nbsp; Theory and Tutorials (for
@@ -211,7 +229,7 @@ th,td{border:1px solid #000;padding:1.5mm 2mm;vertical-align:top}
           <span class="fl" style="min-width:14mm">&nbsp;<?= $isSection2 ? n($rO) : '' ?>&nbsp;</span> per hour)</td>
         <td class="ac">Rs.&nbsp;<?= $isSection2 ? n($oAmt) : '' ?></td>
       </tr>
-      <tr><td class="tb">Total bill claimed (a+b+c)</td><td class="ac tb">Rs.&nbsp;<?= $isSection2 ? n($total) : '' ?></td></tr>
+      <tr><td class="tb">Total bill claimed <?php if($isSection2 && $total > 0): ?>(<?= amountWords($total) ?>)<?php endif; ?></td><td class="ac tb">Rs.&nbsp;<?= $isSection2 ? n($total) : '' ?></td></tr>
     </table>
   </div>
 
@@ -254,13 +272,13 @@ th,td{border:1px solid #000;padding:1.5mm 2mm;vertical-align:top}
 
   <div class="bbox">
     <h3>Bank Details of Claimant</h3>
-    <div>Name of Bank:&nbsp; <span class="fl" style="min-width:85mm">&nbsp;<?= h($bill['bank_name']??'') ?>&nbsp;</span></div>
-    <div>IFSC :&nbsp; <span class="fl" style="min-width:85mm">&nbsp;<?= h($bill['ifsc']??'') ?>&nbsp;</span></div>
+    <div>Name of Bank:&nbsp; <span class="fl" style="min-width:126mm">&nbsp;<?= h($bill['bank_name']??'') ?>&nbsp;</span></div>
+    <div>IFSC :&nbsp; <span class="fl" style="min-width: 126mm;margin-left: 44px;">&nbsp;<?= h($bill['ifsc']??'') ?>&nbsp;</span></div>
     <div class="brow">
-      <div>A/C No.&nbsp;<span class="fl" style="min-width:55mm">&nbsp;<?= h($bill['account_no']??'') ?>&nbsp;</span></div>
-      <div>PAN:&nbsp;<span class="fl" style="min-width:38mm">&nbsp;<?= h($bill['pan']??'') ?>&nbsp;</span></div>
+      <div>A/C No.&nbsp;<span class="fl" style="min-width: 63mm;margin-left: 10mm;">&nbsp;<?= h($bill['account_no']??'') ?>&nbsp;</span></div>
+      <div>PAN:&nbsp;<span class="fl" style="min-width:55mm">&nbsp;<?= h($bill['pan']??'') ?>&nbsp;</span></div>
     </div>
-    <div>Mobile No.&nbsp;<span class="fl" style="min-width:55mm">&nbsp;<?= h($bill['phone']??'') ?>&nbsp;</span></div>
+    <div>Mobile No.&nbsp;<span class="fl" style="min-width: 63mm;margin-left: 22px;">&nbsp;<?= h($bill['phone']??'') ?>&nbsp;</span></div>
   </div>
 
   <div class="sgg" style="margin-top:10mm">
@@ -270,7 +288,7 @@ th,td{border:1px solid #000;padding:1.5mm 2mm;vertical-align:top}
     </div>
     <div class="sr">
       Signature of faculty:<br>
-      <span style="display:inline-block;margin-top:12mm">Name:&nbsp;<span class="fl" style="min-width:50mm">&nbsp;<?= h($bill['tname']) ?>&nbsp;</span></span>
+      <span style="display:inline-block;margin-top:12mm">Name:&nbsp;<span class="fl" style="min-width:50mm;text-align: center;">&nbsp;<?= h($bill['tname']) ?>&nbsp;</span></span>
     </div>
   </div>
 
@@ -286,7 +304,7 @@ th,td{border:1px solid #000;padding:1.5mm 2mm;vertical-align:top}
 
   <div class="sgg" style="margin-top:6mm">
     <div></div>
-    <div class="sr">
+    <div style="text-align: right;">
       Signature of HoD with Stamp<br>
       Date:&nbsp;<span class="fl" style="min-width:35mm">&nbsp;</span>
     </div>
@@ -325,10 +343,31 @@ th,td{border:1px solid #000;padding:1.5mm 2mm;vertical-align:top}
       </tr>
     </thead>
     <tbody>
-      <?php $rowsUsed=0; foreach($lectures as $i=>$l): $rowsUsed++; ?>
+      <?php
+      $dateSpans = [];
+      $nLec = count($lectures);
+      for ($i = 0; $i < $nLec; ) {
+          $dateVal = $lectures[$i]['lecture_date'];
+          $j = $i + 1;
+          while ($j < $nLec && $lectures[$j]['lecture_date'] === $dateVal) {
+              $j++;
+          }
+          $span = $j - $i;
+          for ($k = $i; $k < $j; $k++) {
+              $dateSpans[$k] = ($k === $i) ? $span : 0;
+          }
+          $i = $j;
+      }
+      $rowsUsed=0;
+      $srNo=1;
+      foreach($lectures as $idx=>$l):
+          $rowsUsed++;
+      ?>
       <tr>
-        <td><?= $i+1 ?></td>
-        <td><?= date('d/m/Y',strtotime($l['lecture_date'])) ?></td>
+        <?php if ($dateSpans[$idx] > 0): ?>
+        <td rowspan="<?= $dateSpans[$idx] ?>"><?= $srNo++ ?></td>
+        <td rowspan="<?= $dateSpans[$idx] ?>"><?= date('d/m/Y',strtotime($l['lecture_date'])) ?></td>
+        <?php endif; ?>
         <td class="tl"><?= h($l['subject_name']??'').' ('.h($l['subject_code']??'').')' ?></td>
         <td><?= n($l['theory_hours']) ?></td>
         <td><?= n($l['practical_hours']) ?></td>
@@ -394,7 +433,7 @@ th,td{border:1px solid #000;padding:1.5mm 2mm;vertical-align:top}
     <div style="font-size:9.5pt;line-height:2">Signature of Dept. Faculty I/C<br>Date:</div>
     <div class="sr" style="font-size:9.5pt;line-height:2">Signature &amp; Name of Faculty:</div>
   </div>
-  <div style="text-align:right;margin-top:10mm;font-size:9.5pt;line-height:2">
+  <div style="text-align:right;margin-top:20mm;font-size:9.5pt;line-height:2">
     Signature of HoD with Stamp<br>Date:&nbsp;<span class="fl" style="min-width:35mm">&nbsp;</span>
   </div>
 </div>

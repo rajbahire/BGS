@@ -149,7 +149,7 @@ renderHead('HOD — Classes');
         <!-- Class List Table -->
         <div class="card">
             <div class="card-header">
-                <h3>Classes</h3>
+                <h3>Classes (<?= count($classes) ?>)</h3>
             </div>
             <?php if ($classes): ?>
             <div class="table-wrap">

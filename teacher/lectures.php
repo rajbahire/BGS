@@ -6,25 +6,65 @@ requireTeacher();
 $user = currentUser();
 $uid  = $user['id'];
 
-// Teacher's assigned subject & class
-$teacher = $pdo->prepare("SELECT u.*,s.subject_name,s.subject_code,s.mode AS subject_mode,c.id AS class_id_val,c.label AS class_label FROM users u LEFT JOIN subjects s ON s.id=u.subject_id LEFT JOIN classes c ON c.id=s.class_id WHERE u.id=?");
+// Teacher's assigned subjects & class
+$teacher = $pdo->prepare(
+    "SELECT u.*,
+            s1.subject_name, s1.subject_code, s1.mode AS subject_mode,
+            s2.subject_name AS subject_name_2, s2.subject_code AS subject_code_2
+     FROM users u
+     LEFT JOIN subjects s1 ON s1.id=u.subject_id
+     LEFT JOIN subjects s2 ON s2.id=u.subject_id_2
+     WHERE u.id=?"
+);
 $teacher->execute([$uid]); $teacher=$teacher->fetch();
+
+// Build the list of subjects this teacher is allowed to log lectures for
+$assignedSubjects = [];
+if ($teacher['subject_id']) {
+    $assignedSubjects[] = [
+        'id'    => $teacher['subject_id'],
+        'label' => $teacher['subject_name'].' ('.$teacher['subject_code'].')',
+    ];
+}
+if ($teacher['subject_id_2']) {
+    $assignedSubjects[] = [
+        'id'    => $teacher['subject_id_2'],
+        'label' => $teacher['subject_name_2'].' ('.$teacher['subject_code_2'].')',
+    ];
+}
+$assignedIds = array_column($assignedSubjects, 'id');
+$hasSubject  = count($assignedSubjects) > 0;
+
+// Attach mode to each assigned subject for JS
+foreach ($assignedSubjects as &$as) {
+    $mRow = $pdo->prepare("SELECT mode FROM subjects WHERE id=?");
+    $mRow->execute([$as['id']]); $mRow = $mRow->fetch();
+    $as['mode'] = $mRow['mode'] ?? 'theory';
+}
+unset($as);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
 
     if ($action === 'add') {
-        $date   = $_POST['lecture_date'] ?? '';
-        $subjId = (int)($_POST['subject_id'] ?? $teacher['subject_id'] ?? 0);
-        $classId= (int)($_POST['class_id']   ?? $teacher['class_id_val'] ?? 0);
-        $tHrs   = (float)$_POST['theory_hours'];
-        $pHrs   = (float)$_POST['practical_hours'];
-        $oHrs   = (float)$_POST['other_hours'];
-        $notes  = trim($_POST['notes'] ?? '');
+        $date    = $_POST['lecture_date'] ?? '';
+        $subjId  = (int)($_POST['subject_id'] ?? 0);
+        $tHrs    = (float)$_POST['theory_hours'];
+        $pHrs    = (float)$_POST['practical_hours'];
+        $oHrs    = (float)$_POST['other_hours'];
+        $notes   = trim($_POST['notes'] ?? '');
+
+        // Derive class_id from the chosen subject
+        $classId = 0;
+        if ($subjId) {
+            $cRow = $pdo->prepare("SELECT class_id FROM subjects WHERE id=?");
+            $cRow->execute([$subjId]); $cRow = $cRow->fetch();
+            $classId = (int)($cRow['class_id'] ?? 0);
+        }
 
         if (!$date) { setFlash('error','Date is required.'); }
         elseif ($tHrs + $pHrs + $oHrs <= 0) { setFlash('error','Enter at least some hours.'); }
-        elseif (!$subjId) { setFlash('error','No subject assigned. Please update your profile.'); }
+        elseif (!$subjId || !in_array($subjId, $assignedIds)) { setFlash('error','Invalid subject. You can only log lectures for your assigned subjects.'); }
         else {
             $pdo->prepare("INSERT INTO lectures (teacher_id,subject_id,class_id,lecture_date,theory_hours,practical_hours,other_hours,notes) VALUES (?,?,?,?,?,?,?,?)")
                 ->execute([$uid,$subjId,$classId?:null,$date,$tHrs,$pHrs,$oHrs,$notes]);
@@ -59,9 +99,11 @@ $stmt=$pdo->prepare($sql); $stmt->execute($params); $lectures=$stmt->fetchAll();
 
 $tTotals = ['theory'=>array_sum(array_column($lectures,'theory_hours')),'practical'=>array_sum(array_column($lectures,'practical_hours')),'other'=>array_sum(array_column($lectures,'other_hours'))];
 
-// Additional subjects for teachers who may teach more than one
-$allSubjects = $pdo->prepare("SELECT s.*,c.label AS class_label FROM subjects s JOIN classes c ON c.id=s.class_id WHERE c.department_id=(SELECT department_id FROM users WHERE id=?) AND s.is_active=1 ORDER BY s.subject_name");
-$allSubjects->execute([$uid]); $allSubjects=$allSubjects->fetchAll();
+// (assignedSubjects already built above — no extra query needed)
+
+// Determine which hour types this teacher uses
+$showTheory    = in_array($teacher['teacher_mode'], ['theory',    'theory & practical']);
+$showPractical = in_array($teacher['teacher_mode'], ['practical', 'theory & practical']);
 
 renderHead('My Lectures');
 ?>
@@ -100,8 +142,8 @@ renderHead('My Lectures');
                                 <?php endfor; ?>
                             </select>
                         </div>
-                        <button type="submit" class="btn btn-primary btn-sm">Filter</button>
-                        <a href="lectures.php" class="btn btn-outline btn-sm">Clear</a>
+                        <button type="submit" class="btn btn-primary btn-sm" style="padding: 10px 20px;">Filter</button>
+                        <a href="lectures.php" class="btn btn-outline btn-sm" style="padding: 7px 15px;">Clear</a>
                     </form>
                 </div>
             </div>
@@ -109,8 +151,8 @@ renderHead('My Lectures');
             <?php if($fm && ($tTotals['theory']+$tTotals['practical']+$tTotals['other']) > 0): ?>
             <div class="alert alert-info" style="margin-bottom:1rem">
                 <?= svgIcon('chart') ?> <strong><?= date('F',mktime(0,0,0,$fm,1)) ?> <?= $fy ?>:</strong>
-                Theory <?= number_format($tTotals['theory'],1) ?> hrs &nbsp;|&nbsp;
-                Practical <?= number_format($tTotals['practical'],1) ?> hrs &nbsp;|&nbsp;
+                <?php if($showTheory): ?>Theory <?= number_format($tTotals['theory'],1) ?> hrs &nbsp;|&nbsp;<?php endif; ?>
+                <?php if($showPractical): ?>Practical <?= number_format($tTotals['practical'],1) ?> hrs &nbsp;|&nbsp;<?php endif; ?>
                 Other <?= number_format($tTotals['other'],1) ?> hrs
             </div>
             <?php endif; ?>
@@ -120,7 +162,7 @@ renderHead('My Lectures');
                 <?php if($lectures): ?>
                 <div class="table-wrap">
                     <table>
-                        <thead><tr><th>#</th><th>Date</th><th>Subject</th><th>Class</th><th>Theory Hrs</th><th>Practical Hrs</th><th>Other Hrs</th><th>Action</th></tr></thead>
+                        <thead><tr><th>#</th><th>Date</th><th>Subject</th><th>Class</th><?php if($showTheory): ?><th>Theory Hrs</th><?php endif; ?><?php if($showPractical): ?><th>Practical Hrs</th><?php endif; ?><th>Other Hrs</th><th>Action</th></tr></thead>
                         <tbody>
                         <?php foreach($lectures as $i=>$l): ?>
                         <tr>
@@ -128,8 +170,8 @@ renderHead('My Lectures');
                             <td><?= fmtDate($l['lecture_date']) ?></td>
                             <td><?= e($l['subject_name']??'—') ?> <?= $l['subject_code']?'<span class="badge badge-expert" style="font-size:.66rem">'.e($l['subject_code']).'</span>':'' ?></td>
                             <td class="text-sm text-muted"><?= e($l['class_label']??'—') ?></td>
-                            <td><?= number_format($l['theory_hours'],1) ?></td>
-                            <td><?= number_format($l['practical_hours'],1) ?></td>
+                            <?php if($showTheory): ?><td><?= number_format($l['theory_hours'],1) ?></td><?php endif; ?>
+                            <?php if($showPractical): ?><td><?= number_format($l['practical_hours'],1) ?></td><?php endif; ?>
                             <td><?= number_format($l['other_hours'],1) ?></td>
                             <td>
                                 <form method="POST">
@@ -156,8 +198,8 @@ renderHead('My Lectures');
         <div class="card" style="position:sticky;top:80px">
             <div class="card-header"><h3><?= svgIcon('add') ?> Add Lecture Entry</h3></div>
             <div class="card-body">
-                <?php if(!$teacher['subject_id']): ?>
-                <div class="alert alert-warning"><?= svgIcon('warning') ?> No subject assigned. Please <a href="profile.php">update your profile</a> or ask HOD to assign a subject.</div>
+                <?php if(!$hasSubject): ?>
+                <div class="alert alert-warning"><?= svgIcon('warning') ?> No subject assigned. Please ask your HOD to assign a subject.</div>
                 <?php else: ?>
                 <form method="POST">
                     <input type="hidden" name="action" value="add">
@@ -170,26 +212,32 @@ renderHead('My Lectures');
                     </div>
 
                     <div class="form-group">
-                        <label>Subject</label>
-                        <select name="subject_id" class="form-control">
-                            <?php if($teacher['subject_id']): ?>
-                            <option value="<?= $teacher['subject_id'] ?>" selected><?= e($teacher['subject_name'].' ('.$teacher['subject_code'].')') ?></option>
-                            <?php endif; ?>
-                            <?php foreach($allSubjects as $s): if($s['id']==$teacher['subject_id']) continue; ?>
-                            <option value="<?= $s['id'] ?>"><?= e($s['subject_name'].' ('.$s['subject_code'].')') ?></option>
+                        <label>Subject <span style="color:red">*</span></label>
+                        <select name="subject_id" class="form-control" required>
+                            <option value="">— Select Subject —</option>
+                            <?php foreach($assignedSubjects as $as): ?>
+                            <option value="<?= $as['id'] ?>"><?= e($as['label']) ?></option>
                             <?php endforeach; ?>
                         </select>
                     </div>
 
+                    <?php if($showTheory): ?>
                     <div class="form-group">
                         <label>Theory Hours</label>
-                        <input type="number" name="theory_hours" class="form-control" step="0.5" min="0" value="<?= in_array($teacher['teacher_mode'],['theory','both'])?'1':'0' ?>">
+                        <input type="number" name="theory_hours" class="form-control" step="0.5" min="0" value="1">
                     </div>
+                    <?php else: ?>
+                    <input type="hidden" name="theory_hours" value="0">
+                    <?php endif; ?>
 
+                    <?php if($showPractical): ?>
                     <div class="form-group">
                         <label>Practical Hours</label>
-                        <input type="number" name="practical_hours" class="form-control" step="0.5" min="0" value="<?= in_array($teacher['teacher_mode'],['practical','both'])?'1':'0' ?>">
+                        <input type="number" name="practical_hours" class="form-control" step="0.5" min="0" value="1">
                     </div>
+                    <?php else: ?>
+                    <input type="hidden" name="practical_hours" value="0">
+                    <?php endif; ?>
 
                     <div class="form-group">
                         <label>Other Hours</label>

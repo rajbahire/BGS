@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 require_once '../includes/db.php';
 require_once '../includes/auth.php';
 require_once '../includes/functions.php';
@@ -114,7 +114,7 @@ renderHead('Other Bills');
 
                 <?php if($billType==='practical'): ?>
                 <div class="form-grid">
-                    <div class="form-group"><label>Examiner / Faculty Name *</label><input type="text" name="faculty_name" class="form-control" required></div>
+                    <div class="form-group"><label>Examiner / Faculty Name <span style="color:red">*</span></label><input type="text" name="faculty_name" class="form-control" required></div>
                     <div class="form-group"><label>Subject</label><input type="text" name="subject" class="form-control" placeholder="e.g. Data Structures Lab"></div>
                     <div class="form-group"><label>Programme / Class</label><input type="text" name="program" class="form-control" placeholder="e.g. SE CSE"></div>
                     <div class="form-group"><label>Examination</label><input type="text" name="exam_name" class="form-control" placeholder="Winter Exam 2025-26"></div>
@@ -135,7 +135,7 @@ renderHead('Other Bills');
 
                 <?php elseif($billType==='earn_learn'): ?>
                 <div class="form-grid">
-                    <div class="form-group"><label>Student Name *</label><input type="text" name="student_name" class="form-control" required></div>
+                    <div class="form-group"><label>Student Name <span style="color:red">*</span></label><input type="text" name="student_name" class="form-control" required></div>
                     <div class="form-group"><label>Class / Year</label><input type="text" name="class_year" class="form-control"></div>
                     <div class="form-group"><label>Month</label>
                         <select name="month" class="form-control">
@@ -161,11 +161,11 @@ renderHead('Other Bills');
 
                 <?php elseif($billType==='seminar'): ?>
                 <div class="form-grid">
-                    <div class="form-group"><label>Speaker / Faculty Name *</label><input type="text" name="speaker_name" class="form-control" required></div>
-                    <div class="form-group"><label>Seminar Title *</label><input type="text" name="seminar_title" class="form-control" required></div>
-                    <div class="form-group"><label>Topic</label><input type="text" name="topic" class="form-control"></div>
-                    <div class="form-group"><label>Date</label><input type="date" name="seminar_date" class="form-control" data-today></div>
-                    <div class="form-group"><label>Duration</label><input type="text" name="duration" class="form-control" placeholder="e.g. 2 hours"></div>
+                    <div class="form-group"><label>Speaker / Faculty Name <span style="color:red">*</span></label><input type="text" placeholder="Name of a speaker" name="speaker_name" class="form-control" required></div>
+                    <div class="form-group"><label>Seminar Title <span style="color:red">*</span></label><input type="text" placeholder="Title of the seminar" name="seminar_title" class="form-control" required></div>
+                    <div class="form-group"><label>Topic <span style="color:red">*</span></label><input type="text" placeholder="Topic of the seminar" name="topic" class="form-control" required></div>
+                    <div class="form-group"><label>Date <span style="color:red">*</span></label><input type="date" name="seminar_date" class="form-control" data-today></div>
+                    <div class="form-group"><label>Duration <span style="color:red">*</span></label><input type="text" name="duration" class="form-control" placeholder="e.g. 2 hours" required></div>
                     <div class="form-group"><label>Honorarium (₹)</label><input type="number" name="honorarium" class="form-control" step="0.01" min="0" value="0"></div>
                     <div class="form-group"><label>TA / DA (₹)</label><input type="number" name="ta_da" class="form-control" step="0.01" min="0" value="0"></div>
                     <div class="form-group"><label>Other Amount (₹)</label><input type="number" name="other_amount" class="form-control" step="0.01" min="0" value="0"></div>
@@ -184,8 +184,10 @@ renderHead('Other Bills');
                 <?php endif; ?>
 
                 <hr class="divider">
-                <button type="submit" class="btn btn-primary"><?= svgIcon('printer') ?> Generate &amp; Save Bill</button>
-                <a href="other-bills.php?tab=list" class="btn btn-outline">Cancel</a>
+                <div style="display:flex;gap:8px;align-items:center">
+                    <button type="submit" class="btn btn-primary"><?= svgIcon('printer') ?> Generate & Save Bill</button>
+                    <a href="other-bills.php?tab=list" class="btn btn-outline">Cancel</a>
+                </div>
             </form>
         </div>
     </div>

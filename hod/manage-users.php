@@ -69,7 +69,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $rateO  = (float)($_POST['rate_other']       ?? 0);
         $rateH  = (float)($_POST['rate_per_hour']    ?? 0);
         $appNo  = trim($_POST['appointment_order_no']?? '');
-        $pass   = trim($_POST['password'] ?? '');
 
         // Email uniqueness check (exclude current user)
         if ($email) {
@@ -81,13 +80,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
-        if ($pass) {
-            $pdo->prepare("UPDATE users SET name=?,email=?,phone=?,is_active=?,teacher_type=?,teacher_mode=?,subject_id=?,subject_id_2=?,rate_theory=?,rate_practical=?,rate_other=?,rate_per_hour=?,appointment_order_no=?,password=? WHERE id=? AND department_id=?")
-                ->execute([$name,$email,$phone,$active,$type?:null,$mode?:null,$subj?:null,$subj2?:null,$rateT,$rateP,$rateO,$rateH,$appNo,password_hash($pass,PASSWORD_DEFAULT),$id,$deptId]);
-        } else {
-            $pdo->prepare("UPDATE users SET name=?,email=?,phone=?,is_active=?,teacher_type=?,teacher_mode=?,subject_id=?,subject_id_2=?,rate_theory=?,rate_practical=?,rate_other=?,rate_per_hour=?,appointment_order_no=? WHERE id=? AND department_id=?")
-                ->execute([$name,$email,$phone,$active,$type?:null,$mode?:null,$subj?:null,$subj2?:null,$rateT,$rateP,$rateO,$rateH,$appNo,$id,$deptId]);
-        }
+        $pdo->prepare("UPDATE users SET name=?,email=?,phone=?,is_active=?,teacher_type=?,teacher_mode=?,subject_id=?,subject_id_2=?,rate_theory=?,rate_practical=?,rate_other=?,rate_per_hour=?,appointment_order_no=? WHERE id=? AND department_id=?")
+            ->execute([$name,$email,$phone,$active,$type?:null,$mode?:null,$subj?:null,$subj2?:null,$rateT,$rateP,$rateO,$rateH,$appNo,$id,$deptId]);
         logActivity($pdo,$user['id'],'edit_user',"Updated user: $name");
         setFlash('success','User updated.');
     }
@@ -176,11 +170,22 @@ $students = $pdo->prepare(
      WHERE u.role='student' AND u.department_id=? ORDER BY u.name"
 ); $students->execute([$deptId]); $students=$students->fetchAll();
 
+// Exclude subjects already assigned to other teachers (both subject slots).
+// If editing a teacher, their own subjects remain available.
+$excludeTeacherId = $editRow ? (int)$editRow['id'] : 0;
 $subjects = $pdo->prepare(
     "SELECT s.*, c.label AS class_label FROM subjects s
      JOIN classes c ON c.id=s.class_id
-     WHERE c.department_id=? AND s.is_active=1 ORDER BY c.year,c.semester,s.subject_name"
-); $subjects->execute([$deptId]); $subjects=$subjects->fetchAll();
+     WHERE c.department_id=? AND s.is_active=1
+       AND s.id NOT IN (
+           SELECT subject_id   FROM users WHERE role='teacher' AND department_id=? AND subject_id   IS NOT NULL AND id != ?
+           UNION
+           SELECT subject_id_2 FROM users WHERE role='teacher' AND department_id=? AND subject_id_2 IS NOT NULL AND id != ?
+       )
+     ORDER BY c.year,c.semester,s.subject_name"
+);
+$subjects->execute([$deptId, $deptId, $excludeTeacherId, $deptId, $excludeTeacherId]);
+$subjects=$subjects->fetchAll();
 
 $classes = $pdo->prepare("SELECT * FROM classes WHERE department_id=? AND is_active=1 ORDER BY year,semester");
 $classes->execute([$deptId]); $classes=$classes->fetchAll();
@@ -255,8 +260,6 @@ renderHead('Manage Users');
                     <div class="form-group"><label>Email <span style="color:red">*</span></label><input type="email" name="email" class="form-control" required placeholder="teacher@gcea.edu" value="<?= e($editRow['email']??'') ?>"></div>
                     <?php if(!$editRow): ?>
                     <div class="form-group"><label>Password</label><input type="text" name="password" class="form-control" value="teacher@1234"></div>
-                    <?php else: ?>
-                    <div class="form-group"><label>New Password</label><input type="password" name="password" class="form-control" placeholder="Leave blank to keep current password"></div>
                     <?php endif; ?>
                     <div class="form-group"><label>Phone</label><input type="text" name="phone" class="form-control" value="<?= e($editRow['phone']??'') ?>"></div>
                     <div class="form-group"><label>Teacher Type <span style="color:red">*</span></label>
@@ -272,7 +275,7 @@ renderHead('Manage Users');
                             <option value="">— Select Mode —</option>
                             <option value="theory"    <?= ($editRow['teacher_mode']??'')==='theory'   ?'selected':'' ?>>Theory</option>
                             <option value="practical" <?= ($editRow['teacher_mode']??'')==='practical'?'selected':'' ?>>Practical</option>
-                            <option value="both"      <?= ($editRow['teacher_mode']??'')==='both'     ?'selected':'' ?>>Theory &amp; Practical</option>
+                            <option value="theory & practical" <?= ($editRow['teacher_mode']??'')==='theory & practical' ?'selected':'' ?>>Theory &amp; Practical</option>
                         </select>
                     </div>
                     <div id="subject-fields">
@@ -337,7 +340,6 @@ renderHead('Manage Users');
                     <div class="form-group"><label>Full Name <span style="color:red">*</span></label><input type="text" name="name" class="form-control" placeholder="Enter Full Name" required value="<?= e(($editRow&&$editRow['role']==='student')?$editRow['name']:'') ?>"></div>
                     <?php if($editRow&&$editRow['role']==='student'): ?>
                     <div class="form-group"><label>Email <span style="color:red">*</span></label><input type="email" name="email" class="form-control" required placeholder="student@gcea.edu" value="<?= e($editRow['email']) ?>"></div>
-                    <div class="form-group"><label>New Password</label><input type="password" name="password" class="form-control" placeholder="Leave blank to keep current password"></div>
                     <?php else: ?>
                     <div class="form-group"><label>Email <span style="color:red">*</span></label><input type="email" name="email" class="form-control" required placeholder="student@gcea.edu"></div>
                     <div class="form-group"><label>Password</label><input type="text" name="password" class="form-control" value="student@1234"></div>
@@ -417,7 +419,7 @@ function updateSubjectFields() {
         container.appendChild(buildSelect('subject_id', theoryFilter, editSubj1, 'Theory Subject'));
     } else if (mode === 'practical') {
         container.appendChild(buildSelect('subject_id', practicalFilter, editSubj1, 'Practical Subject'));
-    } else if (mode === 'both') {
+    } else if (mode === 'theory & practical') {
         container.appendChild(buildSelect('subject_id',   theoryFilter,    editSubj1, 'Theory Subject'));
         container.appendChild(buildSelect('subject_id_2', practicalFilter, editSubj2, 'Practical Subject'));
     }
