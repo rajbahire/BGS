@@ -233,7 +233,7 @@ renderHead('Subjects');
                             <option value="">— Select Mode —</option>
                             <option value="theory"    <?= ($editRow['mode']??'')==='theory'   ?'selected':'' ?>>Theory</option>
                             <option value="practical" <?= ($editRow['mode']??'')==='practical'      ?'selected':'' ?>>Practical</option>
-                            <option value="both"      <?= ($editRow['mode']??'')==='both'           ?'selected':'' ?>>Theory &amp; Practical</option>
+                            <option value="theory & practical" <?= ($editRow['mode']??'')==='theory & practical' ?'selected':'' ?>>Theory &amp; Practical</option>
                         </select>
                     </div>
 
